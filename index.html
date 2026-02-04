@@ -26,23 +26,59 @@
     <link rel="stylesheet" href="styles.css">
     
     <!-- PMS (Path Management System) - Load first for centralized path resolution -->
+    <!-- CRITICAL: Fix paths BEFORE browser parses body and starts loading images -->
+    <script>
+        // Detect GitHub Pages and set base path IMMEDIATELY (before PMS loads)
+        (function() {
+            const hostname = window.location.hostname;
+            const isGitHubPages = hostname.includes('github.io');
+            
+            if (isGitHubPages) {
+                const pathname = window.location.pathname;
+                const cleanPath = pathname.replace(/^\/+|\/+$/g, '');
+                const pathParts = cleanPath.split('/').filter(p => p && p !== 'index.html');
+                
+                if (pathParts.length > 0) {
+                    window.__PMS_BASE_PATH__ = '/' + pathParts[0] + '/';
+                } else {
+                    window.__PMS_BASE_PATH__ = '/';
+                }
+                
+                // CRITICAL: Fix paths in head elements IMMEDIATELY
+                const basePath = window.__PMS_BASE_PATH__;
+                if (basePath && basePath !== '/') {
+                    // Fix favicon links in head
+                    document.addEventListener('DOMContentLoaded', function() {
+                        document.querySelectorAll('link[rel*="icon"][href^="/"]').forEach(link => {
+                            const href = link.getAttribute('href');
+                            if (href && !href.startsWith('http') && !href.startsWith(basePath)) {
+                                link.href = basePath + href.substring(1);
+                            }
+                        });
+                    }, { once: true });
+                }
+            } else {
+                window.__PMS_BASE_PATH__ = '';
+            }
+        })();
+    </script>
     <script src="js/pms.js"></script>
     <script>
-        // CRITICAL: Fix paths BEFORE browser starts loading images
-        // This runs synchronously after PMS loads
+        // CRITICAL: Fix paths IMMEDIATELY when PMS loads (before body is parsed)
         (function() {
-            // Wait for PMS to be available
-            function waitForPMS(callback, maxAttempts = 50) {
+            // Wait for PMS to initialize
+            function waitForPMS(callback, maxAttempts = 100) {
                 if (window.PMS && window.PMS.isInitialized) {
                     callback();
                 } else if (maxAttempts > 0) {
-                    setTimeout(() => waitForPMS(callback, maxAttempts - 1), 10);
+                    // Use requestAnimationFrame for faster checking
+                    requestAnimationFrame(() => waitForPMS(callback, maxAttempts - 1));
                 } else {
                     console.error('[PMS] PMS failed to initialize');
                 }
             }
             
-            function fixPathsNow() {
+            function fixPathsImmediately() {
                 if (!window.PMS) return;
                 
                 const basePath = window.PMS.getBasePath();
@@ -50,17 +86,28 @@
                 
                 console.log('[PMS] Immediate fix. BasePath:', basePath);
                 
-                // Fix paths in any existing elements
+                // Fix paths in head (favicons, etc.)
+                window.PMS.fixFaviconPaths();
+                
+                // Fix paths in body if it exists
                 if (document.body) {
                     window.PMS.fixAllPaths();
-                    window.PMS.fixFaviconPaths();
                 }
                 
-                // Also set up observer for elements added later
-                const observer = new MutationObserver(() => {
-                    window.PMS.fixAllPaths();
+                // Set up MutationObserver BEFORE body is fully parsed
+                const observer = new MutationObserver((mutations) => {
+                    let needsFix = false;
+                    mutations.forEach((mutation) => {
+                        if (mutation.addedNodes.length > 0 || mutation.type === 'attributes') {
+                            needsFix = true;
+                        }
+                    });
+                    if (needsFix && window.PMS) {
+                        window.PMS.fixAllPaths();
+                    }
                 });
                 
+                // Start observing as soon as possible
                 if (document.body) {
                     observer.observe(document.body, { 
                         childList: true, 
@@ -69,35 +116,35 @@
                         attributeFilter: ['src', 'href', 'style']
                     });
                 } else {
+                    // Wait for body, but observe document in the meantime
+                    observer.observe(document.documentElement, {
+                        childList: true,
+                        subtree: false
+                    });
+                    
                     document.addEventListener('DOMContentLoaded', () => {
+                        observer.disconnect();
                         observer.observe(document.body, { 
                             childList: true, 
                             subtree: true,
                             attributes: true,
                             attributeFilter: ['src', 'href', 'style']
                         });
-                    });
+                        window.PMS.fixAllPaths();
+                    }, { once: true });
                 }
             }
             
             // Start fixing immediately
-            waitForPMS(fixPathsNow);
+            waitForPMS(fixPathsImmediately);
             
-            // Also fix on DOMContentLoaded
+            // Also fix on DOMContentLoaded (backup)
             document.addEventListener('DOMContentLoaded', () => {
                 if (window.PMS) {
                     window.PMS.fixAllPaths();
                     window.PMS.fixFaviconPaths();
                 }
-            });
-            
-            // Fix on window load
-            window.addEventListener('load', () => {
-                if (window.PMS) {
-                    window.PMS.fixAllPaths();
-                    window.PMS.fixFaviconPaths();
-                }
-            });
+            }, { once: true });
         })();
     </script>
     

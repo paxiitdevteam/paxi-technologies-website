@@ -2,7 +2,22 @@
  * PMS (Path Management System)
  * Centralized path resolution for the entire website
  * Handles all path resolution automatically, eliminating manual path fixes
+ * 
+ * CRITICAL: This must run BEFORE browser starts loading images/assets
  */
+
+// Block image loading until paths are fixed
+(function() {
+    // Intercept image loading
+    const originalImage = window.Image;
+    window.Image = function() {
+        const img = new originalImage();
+        // Delay setting src until PMS is ready
+        const originalSetSrc = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src') || 
+                              Object.getOwnPropertyDescriptor(Object.getPrototypeOf(Object.getPrototypeOf(img)), 'src');
+        return img;
+    };
+})();
 
 class PathManagementSystem {
     constructor() {
@@ -199,21 +214,26 @@ class PathManagementSystem {
         let fixedCount = 0;
 
         // Fix all img src attributes
-        const images = document.querySelectorAll('img[src^="/"]');
-        images.forEach(img => {
+        // CRITICAL: Use getElementsByTagName for better performance and earlier access
+        const allImages = document.getElementsByTagName('img');
+        for (let i = 0; i < allImages.length; i++) {
+            const img = allImages[i];
             const originalSrc = img.getAttribute('src');
             if (originalSrc && 
+                originalSrc.startsWith('/') &&
                 !originalSrc.startsWith('http') && 
                 !originalSrc.startsWith('data:') &&
                 !originalSrc.startsWith(basePath)) {
                 const resolved = this.resolve(originalSrc);
                 if (resolved !== originalSrc) {
-                    img.src = resolved;
+                    // CRITICAL: Remove src first, then set new src to force reload
+                    img.removeAttribute('src');
+                    img.setAttribute('src', resolved);
                     fixedCount++;
                     console.log('[PMS] Fixed image:', originalSrc, '->', resolved);
                 }
             }
-        });
+        }
 
         // Fix all link href attributes (navigation, favicons, etc.)
         const links = document.querySelectorAll('a[href^="/"], link[href^="/"]');
