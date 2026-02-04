@@ -28,13 +28,31 @@
     <!-- PMS (Path Management System) - Load first for centralized path resolution -->
     <script src="js/pms.js"></script>
     <script>
-        // Ensure PMS fixes paths after page fully loads
-        window.addEventListener('load', function() {
-            if (window.PMS) {
-                window.PMS.fixAllPaths();
-                window.PMS.fixFaviconPaths();
+        // Ensure PMS fixes paths after page fully loads and on DOM ready
+        (function() {
+            function ensurePathsFixed() {
+                if (window.PMS) {
+                    console.log('[PMS] Fixing paths. BasePath:', window.PMS.getBasePath());
+                    window.PMS.fixAllPaths();
+                    window.PMS.fixFaviconPaths();
+                } else {
+                    console.warn('[PMS] PMS not available yet');
+                }
             }
-        });
+            
+            // Fix immediately if DOM is ready
+            if (document.readyState === 'complete' || document.readyState === 'interactive') {
+                setTimeout(ensurePathsFixed, 0);
+            }
+            
+            // Fix on DOMContentLoaded
+            document.addEventListener('DOMContentLoaded', ensurePathsFixed);
+            
+            // Fix on window load (after all resources loaded)
+            window.addEventListener('load', function() {
+                setTimeout(ensurePathsFixed, 50);
+            });
+        })();
     </script>
     
     <!-- Favicon -->

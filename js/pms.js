@@ -24,13 +24,23 @@ class PathManagementSystem {
         if (isGitHubPages) {
             // GitHub Pages: extract repository name from pathname
             const pathname = window.location.pathname;
-            const pathParts = pathname.split('/').filter(p => p && p !== 'index.html');
+            // Remove leading/trailing slashes and filter empty parts
+            const cleanPath = pathname.replace(/^\/+|\/+$/g, '');
+            const pathParts = cleanPath.split('/').filter(p => p && p !== 'index.html');
             
+            // For GitHub Pages project sites: username.github.io/repo-name/
+            // The first part of the pathname is the repo name
             if (pathParts.length > 0) {
                 this.basePath = '/' + pathParts[0] + '/';
             } else {
+                // If we're at the root, check if we can determine repo from URL
+                // For project sites, we should have a repo name in the path
+                // Fallback: try to get from window.location if available
                 this.basePath = '/';
             }
+            
+            // Debug logging (remove in production if needed)
+            console.log('[PMS] GitHub Pages detected. Pathname:', pathname, 'BasePath:', this.basePath);
         } else if (isLocalhost) {
             // Local development: use relative paths based on current directory depth
             const path = window.location.pathname;
