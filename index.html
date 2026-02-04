@@ -48,38 +48,56 @@
                 // This works for both dynamically created images and images in HTML
                 const basePath = window.__PMS_BASE_PATH__;
                 
-                // Override Image constructor to fix paths
-                const OriginalImage = window.Image;
-                window.Image = function() {
-                    const img = new OriginalImage();
-                    const originalSrcSetter = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src')?.set;
-                    if (originalSrcSetter) {
-                        Object.defineProperty(img, 'src', {
-                            set: function(value) {
-                                if (typeof value === 'string' && value.startsWith('/') && !value.startsWith(basePath)) {
-                                    value = basePath + value.substring(1);
-                                }
-                                originalSrcSetter.call(this, value);
-                            },
-                            get: function() {
-                                return this.getAttribute('src') || '';
-                            },
-                            configurable: true
-                        });
-                    }
-                    return img;
-                };
-                
-                // Also intercept setAttribute for images
+                // Intercept setAttribute for ALL elements to fix paths before browser loads them
                 const originalSetAttribute = Element.prototype.setAttribute;
                 Element.prototype.setAttribute = function(name, value) {
+                    // Fix img src attributes
                     if (this.tagName === 'IMG' && name === 'src' && 
                         typeof value === 'string' && value.startsWith('/') && 
+                        !value.startsWith('http') && !value.startsWith(basePath)) {
+                        value = basePath + value.substring(1);
+                    }
+                    // Fix link href attributes
+                    if ((this.tagName === 'LINK' || this.tagName === 'A') && name === 'href' && 
+                        typeof value === 'string' && value.startsWith('/') && 
+                        !value.startsWith('http') && !value.startsWith('mailto:') && 
+                        !value.startsWith('tel:') && !value.startsWith('#') && 
                         !value.startsWith(basePath)) {
                         value = basePath + value.substring(1);
                     }
+                    // Fix style attributes with url()
+                    if (name === 'style' && typeof value === 'string' && value.includes('url(/') && !value.includes(basePath)) {
+                        value = value.replace(/url\s*\(\s*(['"]?)(\/[^'")]+)\1\s*\)/g, (match, quote, urlPath) => {
+                            if (!urlPath.startsWith(basePath)) {
+                                return `url(${quote}${basePath}${urlPath.substring(1)}${quote})`;
+                            }
+                            return match;
+                        });
+                    }
                     return originalSetAttribute.call(this, name, value);
                 };
+                
+                // Also intercept HTMLImageElement.src setter
+                try {
+                    const imgProto = HTMLImageElement.prototype;
+                    const srcDescriptor = Object.getOwnPropertyDescriptor(imgProto, 'src');
+                    if (srcDescriptor && srcDescriptor.set) {
+                        Object.defineProperty(imgProto, 'src', {
+                            set: function(value) {
+                                if (typeof value === 'string' && value.startsWith('/') && 
+                                    !value.startsWith('http') && !value.startsWith('data:') && 
+                                    !value.startsWith(basePath)) {
+                                    value = basePath + value.substring(1);
+                                }
+                                srcDescriptor.set.call(this, value);
+                            },
+                            get: srcDescriptor.get,
+                            configurable: true
+                        });
+                    }
+                } catch (e) {
+                    console.warn('[PMS] Could not intercept Image.src setter:', e);
+                }
                 
                 // CRITICAL: Fix paths in head elements IMMEDIATELY
                 if (basePath && basePath !== '/') {
