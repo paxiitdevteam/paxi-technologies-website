@@ -1,0 +1,10 @@
+<!-- Placeholder SVG - Replace with actual service support background -->
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="supportBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2a9d8f;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#264653;stop-opacity:0.8" />
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#supportBgGrad)"/>
+</svg>

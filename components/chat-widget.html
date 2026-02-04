@@ -1,0 +1,83 @@
+<!-- Chat Widget -->
+<div id="chat-widget" class="chat-widget">
+    <!-- Chat Button -->
+    <button id="chat-toggle" class="chat-toggle" aria-label="Open chat" title="Chat with us">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        <span class="chat-badge">1</span>
+    </button>
+
+    <!-- Chat Window -->
+    <div id="chat-window" class="chat-window">
+        <div class="chat-header">
+            <div class="chat-header-content">
+                <h3>Chat with Us</h3>
+                <p class="chat-status">
+                    <span class="status-indicator"></span>
+                    We're here to help
+                </p>
+            </div>
+            <button id="chat-close" class="chat-close" aria-label="Close chat">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 6L6 18M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <div id="chat-messages" class="chat-messages">
+            <div class="chat-message bot-message">
+                <div class="message-avatar">PT</div>
+                <div class="message-content">
+                    <p>Hello! 👋 Welcome to Paxi Technologies. I'm here to help you find the right IT service for your business needs.</p>
+                    <p>How can I assist you today?</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-quick-actions">
+            <button class="quick-action-btn" data-action="services">Our Services</button>
+            <button class="quick-action-btn" data-action="support">IT Support</button>
+            <button class="quick-action-btn" data-action="consulting">Get Consultation</button>
+        </div>
+
+        <!-- Email Capture Modal -->
+        <div id="email-capture-modal" class="email-capture-modal" style="display: none;">
+            <div class="email-capture-content">
+                <h4>Stay Connected</h4>
+                <p>Get personalized IT service recommendations and updates delivered to your inbox.</p>
+                <form id="email-capture-form" class="email-capture-form">
+                    <input 
+                        type="email" 
+                        id="email-capture-input" 
+                        class="email-capture-input" 
+                        placeholder="Enter your email address"
+                        required
+                    />
+                    <div class="email-capture-buttons">
+                        <button type="submit" class="email-capture-submit">Subscribe</button>
+                        <button type="button" class="email-capture-skip" id="email-capture-skip">Skip</button>
+                    </div>
+                </form>
+                <p class="email-capture-privacy">
+                    <a href="/privacy-policy" target="_blank">Privacy Policy</a> • We respect your privacy
+                </p>
+            </div>
+        </div>
+
+        <div class="chat-input-container">
+            <input 
+                type="text" 
+                id="chat-input" 
+                class="chat-input" 
+                placeholder="Type your message..."
+                aria-label="Type your message"
+            />
+            <button id="chat-send" class="chat-send" aria-label="Send message">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+</div>

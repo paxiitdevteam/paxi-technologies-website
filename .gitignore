@@ -1,0 +1,146 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Server
+*.log
+*.pid
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# Environment variables and sensitive files
+.env
+.env.local
+.env.*.local
+*.env
+config.local.js
+secrets.json
+credentials.json
+api-keys.json
+
+# Sensitive configuration
+config/production.json
+config/secrets.json
+*.key
+*.pem
+*.cert
+*.crt
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs with sensitive data
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Chat analytics (may contain user data)
+chat_analytics.json
+user_data.json
+
+# Configuration files with secrets
+config.js
+config.json
+!config.example.js
+!config.example.json
+
+# API keys and secrets
+**/secrets/
+**/keys/
+*.secret
+*.private
+
+# Backup files
+*.backup
+*.old
+*~
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# Windows reserved names
+nul
+con
+prn
+aux
+com1
+com2
+com3
+com4
+com5
+com6
+com7
+com8
+com9
+lpt1
+lpt2
+lpt3
+lpt4
+lpt5
+lpt6
+lpt7
+lpt8
+lpt9
+
+# Node modules (if you add any build tools later)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs (if you add any build tools)
+dist/
+build/
+*.min.js
+*.min.css
+
+# Keep placeholder images but ignore if you want to track separately
+# Uncomment if you want to ignore placeholder images:
+# media/images/*.jpg
+# !media/images/.gitkeep

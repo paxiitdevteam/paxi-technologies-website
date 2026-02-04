@@ -1,0 +1,22 @@
+# Git attributes for proper file handling
+*.js text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.svg text eol=lf
+*.py text eol=lf
+
+# Binary files
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.gif binary
+*.ico binary
+*.pdf binary
+
+# Config files (should not be committed)
+config.js export-ignore
+*.env export-ignore
+*.key export-ignore
+*.pem export-ignore
