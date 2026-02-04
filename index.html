@@ -28,29 +28,57 @@
     <!-- PMS (Path Management System) - Load first for centralized path resolution -->
     <script src="js/pms.js"></script>
     <script>
-        // Ensure PMS fixes paths after page fully loads and on DOM ready
+        // Ensure PMS fixes paths IMMEDIATELY and multiple times
         (function() {
             function ensurePathsFixed() {
                 if (window.PMS) {
-                    console.log('[PMS] Fixing paths. BasePath:', window.PMS.getBasePath());
+                    const basePath = window.PMS.getBasePath();
+                    console.log('[PMS] Fixing paths. BasePath:', basePath);
                     window.PMS.fixAllPaths();
                     window.PMS.fixFaviconPaths();
+                    
+                    // Also manually fix hero background image immediately
+                    const heroSection = document.querySelector('.hero[style*="background-image"]');
+                    if (heroSection) {
+                        const style = heroSection.getAttribute('style');
+                        if (style && style.includes('url(/') && !style.includes(basePath)) {
+                            const fixedStyle = style.replace(/url\s*\(\s*(['"]?)(\/[^'")]+)\1\s*\)/g, (match, quote, urlPath) => {
+                                if (!urlPath.startsWith(basePath)) {
+                                    return `url(${quote}${basePath}${urlPath.substring(1)}${quote})`;
+                                }
+                                return match;
+                            });
+                            if (fixedStyle !== style) {
+                                heroSection.setAttribute('style', fixedStyle);
+                                console.log('[PMS] Manually fixed hero background');
+                            }
+                        }
+                    }
                 } else {
                     console.warn('[PMS] PMS not available yet');
                 }
             }
             
-            // Fix immediately if DOM is ready
-            if (document.readyState === 'complete' || document.readyState === 'interactive') {
-                setTimeout(ensurePathsFixed, 0);
-            }
+            // Fix immediately (run multiple times to catch all elements)
+            ensurePathsFixed();
+            setTimeout(ensurePathsFixed, 0);
+            setTimeout(ensurePathsFixed, 10);
+            setTimeout(ensurePathsFixed, 50);
             
             // Fix on DOMContentLoaded
-            document.addEventListener('DOMContentLoaded', ensurePathsFixed);
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', function() {
+                    ensurePathsFixed();
+                    setTimeout(ensurePathsFixed, 10);
+                    setTimeout(ensurePathsFixed, 50);
+                });
+            }
             
             // Fix on window load (after all resources loaded)
             window.addEventListener('load', function() {
+                setTimeout(ensurePathsFixed, 0);
                 setTimeout(ensurePathsFixed, 50);
+                setTimeout(ensurePathsFixed, 100);
             });
         })();
     </script>

@@ -180,15 +180,22 @@ class PathManagementSystem {
         const basePath = this.getBasePath();
         
         // Skip if no base path adjustment needed
-        if (!basePath || basePath === '/') return;
-
-        // Ensure document.body exists
-        if (!document.body) {
+        if (!basePath || basePath === '/') {
+            console.log('[PMS] No path fixing needed. BasePath:', basePath);
             return;
         }
 
+        // Ensure document.body exists
+        if (!document.body) {
+            console.log('[PMS] Document body not ready yet');
+            return;
+        }
+
+        let fixedCount = 0;
+
         // Fix all img src attributes
-        document.querySelectorAll('img[src^="/"]').forEach(img => {
+        const images = document.querySelectorAll('img[src^="/"]');
+        images.forEach(img => {
             const originalSrc = img.getAttribute('src');
             if (originalSrc && 
                 !originalSrc.startsWith('http') && 
@@ -197,12 +204,15 @@ class PathManagementSystem {
                 const resolved = this.resolve(originalSrc);
                 if (resolved !== originalSrc) {
                     img.src = resolved;
+                    fixedCount++;
+                    console.log('[PMS] Fixed image:', originalSrc, '->', resolved);
                 }
             }
         });
 
         // Fix all link href attributes (navigation, favicons, etc.)
-        document.querySelectorAll('a[href^="/"], link[href^="/"]').forEach(link => {
+        const links = document.querySelectorAll('a[href^="/"], link[href^="/"]');
+        links.forEach(link => {
             const originalHref = link.getAttribute('href');
             if (originalHref && 
                 !originalHref.startsWith('http') && 
@@ -214,37 +224,55 @@ class PathManagementSystem {
                 const resolved = this.resolve(originalHref);
                 if (resolved !== originalHref) {
                     link.href = resolved;
+                    fixedCount++;
+                    console.log('[PMS] Fixed link:', originalHref, '->', resolved);
                 }
             }
         });
 
         // Fix inline styles with url() containing absolute paths
-        document.querySelectorAll('[style*="url(/"]').forEach(el => {
+        // Match: url('/path'), url("/path"), url(/path)
+        const styleElements = document.querySelectorAll('[style*="url(/"]');
+        styleElements.forEach(el => {
             const style = el.getAttribute('style');
             if (style && !style.includes(basePath)) {
-                const fixedStyle = style.replace(/url\((\/[^)]+)\)/g, (match, urlPath) => {
-                    const resolved = this.resolve(urlPath);
-                    return `url(${resolved})`;
+                // More comprehensive regex to match url('/path'), url("/path"), url(/path)
+                const fixedStyle = style.replace(/url\s*\(\s*(['"]?)(\/[^'")]+)\1\s*\)/g, (match, quote, urlPath) => {
+                    if (!urlPath.startsWith(basePath)) {
+                        const resolved = this.resolve(urlPath);
+                        return `url(${quote}${resolved}${quote})`;
+                    }
+                    return match;
                 });
                 if (fixedStyle !== style) {
                     el.setAttribute('style', fixedStyle);
+                    fixedCount++;
+                    console.log('[PMS] Fixed style URL:', urlPath || 'unknown', '->', this.resolve(urlPath || ''));
                 }
             }
         });
 
         // Fix CSS background-image in style attributes (more comprehensive)
-        document.querySelectorAll('[style*="background"]').forEach(el => {
+        const bgElements = document.querySelectorAll('[style*="background"]');
+        bgElements.forEach(el => {
             const style = el.getAttribute('style');
             if (style && style.includes('url(/') && !style.includes(basePath)) {
-                const fixedStyle = style.replace(/url\((\/[^)]+)\)/g, (match, urlPath) => {
-                    const resolved = this.resolve(urlPath);
-                    return `url(${resolved})`;
+                const fixedStyle = style.replace(/url\s*\(\s*(['"]?)(\/[^'")]+)\1\s*\)/g, (match, quote, urlPath) => {
+                    if (!urlPath.startsWith(basePath)) {
+                        const resolved = this.resolve(urlPath);
+                        return `url(${quote}${resolved}${quote})`;
+                    }
+                    return match;
                 });
                 if (fixedStyle !== style) {
                     el.setAttribute('style', fixedStyle);
+                    fixedCount++;
+                    console.log('[PMS] Fixed background URL:', urlPath || 'unknown');
                 }
             }
         });
+
+        console.log(`[PMS] Fixed ${fixedCount} paths`);
     }
 
     /**
