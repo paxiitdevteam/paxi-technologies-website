@@ -44,22 +44,41 @@
                     window.__PMS_BASE_PATH__ = '/';
                 }
                 
-                // CRITICAL: Prevent images from loading until paths are fixed
-                // Intercept image creation
-                const originalCreateElement = document.createElement;
-                document.createElement = function(tagName) {
-                    const element = originalCreateElement.call(document, tagName);
-                    if (tagName.toLowerCase() === 'img' && window.__PMS_BASE_PATH__ && window.__PMS_BASE_PATH__ !== '/') {
-                        const basePath = window.__PMS_BASE_PATH__;
-                        const originalSetAttribute = element.setAttribute;
-                        element.setAttribute = function(name, value) {
-                            if (name === 'src' && typeof value === 'string' && value.startsWith('/') && !value.startsWith(basePath)) {
-                                value = basePath + value.substring(1);
-                            }
-                            return originalSetAttribute.call(this, name, value);
-                        };
+                // CRITICAL: Intercept and fix image src attributes BEFORE browser loads them
+                // This works for both dynamically created images and images in HTML
+                const basePath = window.__PMS_BASE_PATH__;
+                
+                // Override Image constructor to fix paths
+                const OriginalImage = window.Image;
+                window.Image = function() {
+                    const img = new OriginalImage();
+                    const originalSrcSetter = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src')?.set;
+                    if (originalSrcSetter) {
+                        Object.defineProperty(img, 'src', {
+                            set: function(value) {
+                                if (typeof value === 'string' && value.startsWith('/') && !value.startsWith(basePath)) {
+                                    value = basePath + value.substring(1);
+                                }
+                                originalSrcSetter.call(this, value);
+                            },
+                            get: function() {
+                                return this.getAttribute('src') || '';
+                            },
+                            configurable: true
+                        });
                     }
-                    return element;
+                    return img;
+                };
+                
+                // Also intercept setAttribute for images
+                const originalSetAttribute = Element.prototype.setAttribute;
+                Element.prototype.setAttribute = function(name, value) {
+                    if (this.tagName === 'IMG' && name === 'src' && 
+                        typeof value === 'string' && value.startsWith('/') && 
+                        !value.startsWith(basePath)) {
+                        value = basePath + value.substring(1);
+                    }
+                    return originalSetAttribute.call(this, name, value);
                 };
                 
                 // CRITICAL: Fix paths in head elements IMMEDIATELY
