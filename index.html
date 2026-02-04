@@ -109,6 +109,30 @@
                         attributes: true,
                         attributeFilter: ['src', 'style']
                     });
+                    
+                    // Also fix any existing elements immediately
+                    setTimeout(() => {
+                        document.querySelectorAll('img[src^="/"]').forEach(img => {
+                            const src = img.getAttribute('src');
+                            if (src && !src.startsWith('http') && !src.startsWith(basePath)) {
+                                img.setAttribute('src', basePath + src.substring(1));
+                            }
+                        });
+                        document.querySelectorAll('[style*="url(/"]').forEach(el => {
+                            const style = el.getAttribute('style');
+                            if (style && !style.includes(basePath)) {
+                                const fixedStyle = style.replace(/url\s*\(\s*(['"]?)(\/[^'")]+)\1\s*\)/g, (match, quote, urlPath) => {
+                                    if (!urlPath.startsWith(basePath)) {
+                                        return `url(${quote}${basePath}${urlPath.substring(1)}${quote})`;
+                                    }
+                                    return match;
+                                });
+                                if (fixedStyle !== style) {
+                                    el.setAttribute('style', fixedStyle);
+                                }
+                            }
+                        });
+                    }, 0);
                 }
                 
                 // CRITICAL: Fix paths in head elements IMMEDIATELY
