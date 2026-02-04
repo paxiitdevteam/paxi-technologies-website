@@ -55,6 +55,11 @@ class PathManagementSystem {
         // Store globally for access
         window.__PMS_BASE_PATH__ = this.basePath;
         this.isInitialized = true;
+        
+        // Mark PMS as ready for immediate use
+        if (typeof window !== 'undefined') {
+            window.__PMS_READY__ = true;
+        }
 
         // Auto-fix all paths in the document when DOM is ready
         // Use multiple strategies to ensure paths are fixed

@@ -28,57 +28,75 @@
     <!-- PMS (Path Management System) - Load first for centralized path resolution -->
     <script src="js/pms.js"></script>
     <script>
-        // Ensure PMS fixes paths IMMEDIATELY and multiple times
+        // CRITICAL: Fix paths BEFORE browser starts loading images
+        // This runs synchronously after PMS loads
         (function() {
-            function ensurePathsFixed() {
-                if (window.PMS) {
-                    const basePath = window.PMS.getBasePath();
-                    console.log('[PMS] Fixing paths. BasePath:', basePath);
-                    window.PMS.fixAllPaths();
-                    window.PMS.fixFaviconPaths();
-                    
-                    // Also manually fix hero background image immediately
-                    const heroSection = document.querySelector('.hero[style*="background-image"]');
-                    if (heroSection) {
-                        const style = heroSection.getAttribute('style');
-                        if (style && style.includes('url(/') && !style.includes(basePath)) {
-                            const fixedStyle = style.replace(/url\s*\(\s*(['"]?)(\/[^'")]+)\1\s*\)/g, (match, quote, urlPath) => {
-                                if (!urlPath.startsWith(basePath)) {
-                                    return `url(${quote}${basePath}${urlPath.substring(1)}${quote})`;
-                                }
-                                return match;
-                            });
-                            if (fixedStyle !== style) {
-                                heroSection.setAttribute('style', fixedStyle);
-                                console.log('[PMS] Manually fixed hero background');
-                            }
-                        }
-                    }
+            // Wait for PMS to be available
+            function waitForPMS(callback, maxAttempts = 50) {
+                if (window.PMS && window.PMS.isInitialized) {
+                    callback();
+                } else if (maxAttempts > 0) {
+                    setTimeout(() => waitForPMS(callback, maxAttempts - 1), 10);
                 } else {
-                    console.warn('[PMS] PMS not available yet');
+                    console.error('[PMS] PMS failed to initialize');
                 }
             }
             
-            // Fix immediately (run multiple times to catch all elements)
-            ensurePathsFixed();
-            setTimeout(ensurePathsFixed, 0);
-            setTimeout(ensurePathsFixed, 10);
-            setTimeout(ensurePathsFixed, 50);
-            
-            // Fix on DOMContentLoaded
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', function() {
-                    ensurePathsFixed();
-                    setTimeout(ensurePathsFixed, 10);
-                    setTimeout(ensurePathsFixed, 50);
+            function fixPathsNow() {
+                if (!window.PMS) return;
+                
+                const basePath = window.PMS.getBasePath();
+                if (!basePath || basePath === '/') return;
+                
+                console.log('[PMS] Immediate fix. BasePath:', basePath);
+                
+                // Fix paths in any existing elements
+                if (document.body) {
+                    window.PMS.fixAllPaths();
+                    window.PMS.fixFaviconPaths();
+                }
+                
+                // Also set up observer for elements added later
+                const observer = new MutationObserver(() => {
+                    window.PMS.fixAllPaths();
                 });
+                
+                if (document.body) {
+                    observer.observe(document.body, { 
+                        childList: true, 
+                        subtree: true,
+                        attributes: true,
+                        attributeFilter: ['src', 'href', 'style']
+                    });
+                } else {
+                    document.addEventListener('DOMContentLoaded', () => {
+                        observer.observe(document.body, { 
+                            childList: true, 
+                            subtree: true,
+                            attributes: true,
+                            attributeFilter: ['src', 'href', 'style']
+                        });
+                    });
+                }
             }
             
-            // Fix on window load (after all resources loaded)
-            window.addEventListener('load', function() {
-                setTimeout(ensurePathsFixed, 0);
-                setTimeout(ensurePathsFixed, 50);
-                setTimeout(ensurePathsFixed, 100);
+            // Start fixing immediately
+            waitForPMS(fixPathsNow);
+            
+            // Also fix on DOMContentLoaded
+            document.addEventListener('DOMContentLoaded', () => {
+                if (window.PMS) {
+                    window.PMS.fixAllPaths();
+                    window.PMS.fixFaviconPaths();
+                }
+            });
+            
+            // Fix on window load
+            window.addEventListener('load', () => {
+                if (window.PMS) {
+                    window.PMS.fixAllPaths();
+                    window.PMS.fixFaviconPaths();
+                }
             });
         })();
     </script>
