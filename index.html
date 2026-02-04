@@ -44,18 +44,39 @@
                     window.__PMS_BASE_PATH__ = '/';
                 }
                 
+                // CRITICAL: Prevent images from loading until paths are fixed
+                // Intercept image creation
+                const originalCreateElement = document.createElement;
+                document.createElement = function(tagName) {
+                    const element = originalCreateElement.call(document, tagName);
+                    if (tagName.toLowerCase() === 'img' && window.__PMS_BASE_PATH__ && window.__PMS_BASE_PATH__ !== '/') {
+                        const basePath = window.__PMS_BASE_PATH__;
+                        const originalSetAttribute = element.setAttribute;
+                        element.setAttribute = function(name, value) {
+                            if (name === 'src' && typeof value === 'string' && value.startsWith('/') && !value.startsWith(basePath)) {
+                                value = basePath + value.substring(1);
+                            }
+                            return originalSetAttribute.call(this, name, value);
+                        };
+                    }
+                    return element;
+                };
+                
                 // CRITICAL: Fix paths in head elements IMMEDIATELY
                 const basePath = window.__PMS_BASE_PATH__;
                 if (basePath && basePath !== '/') {
-                    // Fix favicon links in head
-                    document.addEventListener('DOMContentLoaded', function() {
+                    // Fix favicon links in head immediately
+                    const fixHeadLinks = () => {
                         document.querySelectorAll('link[rel*="icon"][href^="/"]').forEach(link => {
                             const href = link.getAttribute('href');
                             if (href && !href.startsWith('http') && !href.startsWith(basePath)) {
                                 link.href = basePath + href.substring(1);
                             }
                         });
-                    }, { once: true });
+                    };
+                    // Run immediately and on DOMContentLoaded
+                    if (document.head) fixHeadLinks();
+                    document.addEventListener('DOMContentLoaded', fixHeadLinks, { once: true });
                 }
             } else {
                 window.__PMS_BASE_PATH__ = '';

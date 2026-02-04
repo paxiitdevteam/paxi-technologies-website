@@ -226,9 +226,14 @@ class PathManagementSystem {
                 !originalSrc.startsWith(basePath)) {
                 const resolved = this.resolve(originalSrc);
                 if (resolved !== originalSrc) {
-                    // CRITICAL: Remove src first, then set new src to force reload
+                    // CRITICAL: Use data-src temporarily to prevent loading, then set src
+                    // This ensures browser doesn't load the wrong path
+                    img.setAttribute('data-original-src', originalSrc);
                     img.removeAttribute('src');
-                    img.setAttribute('src', resolved);
+                    // Use requestAnimationFrame to ensure DOM is ready
+                    requestAnimationFrame(() => {
+                        img.setAttribute('src', resolved);
+                    });
                     fixedCount++;
                     console.log('[PMS] Fixed image:', originalSrc, '->', resolved);
                 }
