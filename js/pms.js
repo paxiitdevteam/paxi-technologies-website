@@ -237,9 +237,11 @@ class PathManagementSystem {
             const style = el.getAttribute('style');
             if (style && !style.includes(basePath)) {
                 // More comprehensive regex to match url('/path'), url("/path"), url(/path)
-                const fixedStyle = style.replace(/url\s*\(\s*(['"]?)(\/[^'")]+)\1\s*\)/g, (match, quote, urlPath) => {
-                    if (!urlPath.startsWith(basePath)) {
-                        const resolved = this.resolve(urlPath);
+                let urlPath = null;
+                const fixedStyle = style.replace(/url\s*\(\s*(['"]?)(\/[^'")]+)\1\s*\)/g, (match, quote, path) => {
+                    urlPath = path;
+                    if (!path.startsWith(basePath)) {
+                        const resolved = this.resolve(path);
                         return `url(${quote}${resolved}${quote})`;
                     }
                     return match;
@@ -247,7 +249,7 @@ class PathManagementSystem {
                 if (fixedStyle !== style) {
                     el.setAttribute('style', fixedStyle);
                     fixedCount++;
-                    console.log('[PMS] Fixed style URL:', urlPath || 'unknown', '->', this.resolve(urlPath || ''));
+                    console.log('[PMS] Fixed style URL:', urlPath, '->', this.resolve(urlPath));
                 }
             }
         });
@@ -341,6 +343,32 @@ const PMS = new PathManagementSystem();
 
 // Make PMS globally available
 window.PMS = PMS;
+
+// CRITICAL: Fix paths immediately, before browser starts loading images
+// Run synchronously if possible, or as early as possible
+(function immediatePathFix() {
+    // If document is already loaded, fix immediately
+    if (document.body) {
+        PMS.fixAllPaths();
+        PMS.fixFaviconPaths();
+    }
+    
+    // Also fix on next tick (microtask)
+    Promise.resolve().then(() => {
+        if (document.body) {
+            PMS.fixAllPaths();
+            PMS.fixFaviconPaths();
+        }
+    });
+    
+    // Fix on DOMContentLoaded (as early as possible)
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            PMS.fixAllPaths();
+            PMS.fixFaviconPaths();
+        }, { once: true, passive: true });
+    }
+})();
 
 // Export for module systems
 if (typeof module !== 'undefined' && module.exports) {
