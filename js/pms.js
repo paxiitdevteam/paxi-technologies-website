@@ -47,11 +47,81 @@ class PathManagementSystem {
         this.isInitialized = true;
 
         // Auto-fix all paths in the document when DOM is ready
+        // Use multiple strategies to ensure paths are fixed
+        const fixPaths = () => {
+            this.fixAllPaths();
+            // Also fix favicon links specifically
+            this.fixFaviconPaths();
+        };
+
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => this.fixAllPaths());
+            document.addEventListener('DOMContentLoaded', fixPaths);
+            // Also run after a short delay to catch any late-loading content
+            setTimeout(fixPaths, 100);
         } else {
             // DOM already loaded
-            this.fixAllPaths();
+            fixPaths();
+            // Run again after a short delay
+            setTimeout(fixPaths, 100);
+        }
+
+        // Watch for dynamically added elements
+        this.observeDOMChanges();
+    }
+
+    /**
+     * Fix favicon paths specifically
+     */
+    fixFaviconPaths() {
+        const basePath = this.getBasePath();
+        if (!basePath || basePath === '/') return;
+
+        document.querySelectorAll('link[rel*="icon"]').forEach(link => {
+            const href = link.getAttribute('href');
+            if (href && href.startsWith('/') && !href.startsWith('http') && !href.startsWith(basePath)) {
+                link.href = this.resolve(href);
+            }
+        });
+    }
+
+    /**
+     * Observe DOM changes to fix paths in dynamically added content
+     */
+    observeDOMChanges() {
+        const basePath = this.getBasePath();
+        if (!basePath || basePath === '/') return; // No need to observe if no path fixing needed
+
+        // Use MutationObserver to watch for new elements
+        const observer = new MutationObserver((mutations) => {
+            let shouldFix = false;
+            mutations.forEach((mutation) => {
+                if (mutation.addedNodes.length > 0) {
+                    shouldFix = true;
+                }
+            });
+            if (shouldFix) {
+                // Debounce the fix operation
+                clearTimeout(this._fixTimeout);
+                this._fixTimeout = setTimeout(() => {
+                    this.fixAllPaths();
+                }, 50);
+            }
+        });
+
+        // Start observing
+        if (document.body) {
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+        } else {
+            // Wait for body to be available
+            document.addEventListener('DOMContentLoaded', () => {
+                observer.observe(document.body, {
+                    childList: true,
+                    subtree: true
+                });
+            });
         }
     }
 
@@ -102,11 +172,22 @@ class PathManagementSystem {
         // Skip if no base path adjustment needed
         if (!basePath || basePath === '/') return;
 
+        // Ensure document.body exists
+        if (!document.body) {
+            return;
+        }
+
         // Fix all img src attributes
         document.querySelectorAll('img[src^="/"]').forEach(img => {
             const originalSrc = img.getAttribute('src');
-            if (originalSrc && !originalSrc.startsWith('http') && !originalSrc.startsWith(basePath)) {
-                img.src = this.resolve(originalSrc);
+            if (originalSrc && 
+                !originalSrc.startsWith('http') && 
+                !originalSrc.startsWith('data:') &&
+                !originalSrc.startsWith(basePath)) {
+                const resolved = this.resolve(originalSrc);
+                if (resolved !== originalSrc) {
+                    img.src = resolved;
+                }
             }
         });
 
@@ -118,8 +199,12 @@ class PathManagementSystem {
                 !originalHref.startsWith('mailto:') && 
                 !originalHref.startsWith('tel:') && 
                 !originalHref.startsWith('#') &&
+                !originalHref.startsWith('javascript:') &&
                 !originalHref.startsWith(basePath)) {
-                link.href = this.resolve(originalHref);
+                const resolved = this.resolve(originalHref);
+                if (resolved !== originalHref) {
+                    link.href = resolved;
+                }
             }
         });
 
@@ -127,21 +212,27 @@ class PathManagementSystem {
         document.querySelectorAll('[style*="url(/"]').forEach(el => {
             const style = el.getAttribute('style');
             if (style && !style.includes(basePath)) {
-                const fixedStyle = style.replace(/url\((\/)/g, (match, p1) => {
-                    return `url(${this.resolve(p1)}`;
+                const fixedStyle = style.replace(/url\((\/[^)]+)\)/g, (match, urlPath) => {
+                    const resolved = this.resolve(urlPath);
+                    return `url(${resolved})`;
                 });
-                el.setAttribute('style', fixedStyle);
+                if (fixedStyle !== style) {
+                    el.setAttribute('style', fixedStyle);
+                }
             }
         });
 
-        // Fix CSS background-image in style attributes
-        document.querySelectorAll('[style*="background-image"]').forEach(el => {
+        // Fix CSS background-image in style attributes (more comprehensive)
+        document.querySelectorAll('[style*="background"]').forEach(el => {
             const style = el.getAttribute('style');
             if (style && style.includes('url(/') && !style.includes(basePath)) {
                 const fixedStyle = style.replace(/url\((\/[^)]+)\)/g, (match, urlPath) => {
-                    return `url(${this.resolve(urlPath)})`;
+                    const resolved = this.resolve(urlPath);
+                    return `url(${resolved})`;
                 });
-                el.setAttribute('style', fixedStyle);
+                if (fixedStyle !== style) {
+                    el.setAttribute('style', fixedStyle);
+                }
             }
         });
     }

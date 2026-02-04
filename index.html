@@ -27,6 +27,15 @@
     
     <!-- PMS (Path Management System) - Load first for centralized path resolution -->
     <script src="js/pms.js"></script>
+    <script>
+        // Ensure PMS fixes paths after page fully loads
+        window.addEventListener('load', function() {
+            if (window.PMS) {
+                window.PMS.fixAllPaths();
+                window.PMS.fixFaviconPaths();
+            }
+        });
+    </script>
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/media/favicons/favicon-placeholder.svg">
