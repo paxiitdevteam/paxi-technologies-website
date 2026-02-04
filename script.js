@@ -1,73 +1,25 @@
-// Get base path for components (works from root and subdirectories)
+// PMS (Path Management System) - Use centralized path resolution
+// All path operations now go through PMS
 function getBasePath() {
-    // Use the base path set in the head script if available
-    if (window.__BASE_PATH__ !== undefined) {
-        return window.__BASE_PATH__;
+    if (window.PMS) {
+        return window.PMS.getBasePath();
     }
-    
-    // Fallback: detect GitHub Pages
-    const hostname = window.location.hostname;
-    const isGitHubPages = hostname.includes('github.io');
-    
-    if (isGitHubPages) {
-        // GitHub Pages: use absolute paths from repository root
-        const pathname = window.location.pathname;
-        const pathParts = pathname.split('/').filter(p => p && p !== 'index.html');
-        if (pathParts.length > 0) {
-            return `/${pathParts[0]}/`;
-        }
-        return '/'; // Fallback to root
-    }
-    
-    // Local development: use relative paths
-    const path = window.location.pathname;
-    // Count directory depth (excluding empty strings and index.html)
-    const parts = path.split('/').filter(p => p && p !== 'index.html' && p !== '');
-    // Depth is number of directories we're in
-    // Root: 0, /contact: 1, /services/it-support: 2
-    const depth = parts.length;
-    return depth > 0 ? '../'.repeat(depth) : '';
-}
-
-// Fix absolute paths in HTML for GitHub Pages
-function fixAbsolutePaths() {
-    const basePath = getBasePath();
-    if (!basePath || basePath === '/') return; // No fix needed for root
-    
-    // Fix all img src attributes with absolute paths
-    document.querySelectorAll('img[src^="/"]').forEach(img => {
-        const originalSrc = img.getAttribute('src');
-        if (originalSrc && !originalSrc.startsWith(basePath) && !originalSrc.startsWith('http')) {
-            img.src = basePath + originalSrc.substring(1);
-        }
-    });
-    
-    // Fix all link href attributes with absolute paths (except external links)
-    document.querySelectorAll('a[href^="/"], link[href^="/"]').forEach(link => {
-        const originalHref = link.getAttribute('href');
-        if (originalHref && !originalHref.startsWith('http') && !originalHref.startsWith('mailto:') && !originalHref.startsWith('tel:') && !originalHref.startsWith(basePath)) {
-            link.href = basePath + originalHref.substring(1);
-        }
-    });
-    
-    // Fix inline styles with url() containing absolute paths
-    document.querySelectorAll('[style*="url(/"]').forEach(el => {
-        const style = el.getAttribute('style');
-        if (style && !style.includes(basePath)) {
-            const fixedStyle = style.replace(/url\((\/)/g, `url(${basePath.substring(0, basePath.length - 1)}/`);
-            el.setAttribute('style', fixedStyle);
-        }
-    });
+    // Fallback if PMS not loaded
+    return '';
 }
 
 // Load Components
 document.addEventListener('DOMContentLoaded', function() {
-    // Fix absolute paths first
-    fixAbsolutePaths();
+    // Ensure PMS is initialized
+    if (!window.PMS) {
+        console.error('PMS not loaded! Path resolution may fail.');
+    }
+    
     const basePath = getBasePath();
     
     // Load Header
-    fetch(basePath + 'components/header.html')
+    const headerPath = window.PMS ? window.PMS.getComponentPath('header.html') : (basePath + 'components/header.html');
+    fetch(headerPath)
         .then(response => {
             if (!response.ok) throw new Error('Failed to load header');
             return response.text();
@@ -76,8 +28,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const headerPlaceholder = document.getElementById('header-placeholder');
             if (headerPlaceholder) {
                 headerPlaceholder.innerHTML = data;
-                // Fix paths in loaded header
-                fixAbsolutePaths();
+                // Fix paths in loaded header using PMS
+                if (window.PMS) {
+                    window.PMS.fixPathsInContainer(headerPlaceholder);
+                }
                 // Initialize navigation features after header loads
                 setActiveNavLink();
                 initMobileMenu();
@@ -102,8 +56,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const footerPlaceholder = document.getElementById('footer-placeholder');
             if (footerPlaceholder) {
                 footerPlaceholder.innerHTML = data;
-                // Fix paths in loaded footer
-                fixAbsolutePaths();
+                // Fix paths in loaded footer using PMS
+                if (window.PMS) {
+                    window.PMS.fixPathsInContainer(footerPlaceholder);
+                }
                 // Update copyright year
                 updateCopyrightYear();
             }
@@ -119,13 +75,20 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
     // Load Cookie Banner
-    fetch(basePath + 'components/cookie-banner.html')
+    const cookieBannerPath = window.PMS ? window.PMS.getComponentPath('cookie-banner.html') : (basePath + 'components/cookie-banner.html');
+    fetch(cookieBannerPath)
         .then(response => {
             if (!response.ok) throw new Error('Failed to load cookie banner');
             return response.text();
         })
         .then(data => {
-            document.body.insertAdjacentHTML('beforeend', data);
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = data;
+            // Fix paths in cookie banner HTML before inserting
+            if (window.PMS) {
+                window.PMS.fixPathsInContainer(tempDiv);
+            }
+            document.body.insertAdjacentHTML('beforeend', tempDiv.innerHTML);
             // Initialize cookie consent after banner is loaded
             initCookieConsent();
         })
@@ -956,8 +919,8 @@ document.addEventListener('DOMContentLoaded', function() {
 // ===== CHAT WIDGET =====
 
 function initChatWidget() {
-    // Load chat widget HTML
-    const chatWidgetPath = getBasePath() + 'components/chat-widget.html';
+    // Load chat widget HTML using PMS
+    const chatWidgetPath = window.PMS ? window.PMS.getComponentPath('chat-widget.html') : (getBasePath() + 'components/chat-widget.html');
     
     fetch(chatWidgetPath)
         .then(response => {
@@ -965,9 +928,13 @@ function initChatWidget() {
             return response.text();
         })
                     .then(html => {
-                        document.body.insertAdjacentHTML('beforeend', html);
-                        // Fix paths in loaded chat widget
-                        fixAbsolutePaths();
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = html;
+                        // Fix paths in chat widget HTML before inserting
+                        if (window.PMS) {
+                            window.PMS.fixPathsInContainer(tempDiv);
+                        }
+                        document.body.insertAdjacentHTML('beforeend', tempDiv.innerHTML);
                         setupChatWidget();
                     })
         .catch(error => {
