@@ -262,22 +262,30 @@ class PathManagementSystem {
 
         // Fix inline styles with url() containing absolute paths
         // Match: url('/path'), url("/path"), url(/path)
+        // CRITICAL: Fix styles BEFORE browser tries to load background images
         const styleElements = document.querySelectorAll('[style*="url(/"]');
         styleElements.forEach(el => {
             const style = el.getAttribute('style');
             if (style && !style.includes(basePath)) {
                 // More comprehensive regex to match url('/path'), url("/path"), url(/path)
                 let urlPath = null;
+                let wasFixed = false;
                 const fixedStyle = style.replace(/url\s*\(\s*(['"]?)(\/[^'")]+)\1\s*\)/g, (match, quote, path) => {
                     urlPath = path;
                     if (!path.startsWith(basePath)) {
+                        wasFixed = true;
                         const resolved = this.resolve(path);
                         return `url(${quote}${resolved}${quote})`;
                     }
                     return match;
                 });
-                if (fixedStyle !== style) {
-                    el.setAttribute('style', fixedStyle);
+                if (wasFixed && fixedStyle !== style) {
+                    // CRITICAL: Remove style first, then set new style to force browser to reload
+                    el.removeAttribute('style');
+                    // Use requestAnimationFrame to ensure browser processes the change
+                    requestAnimationFrame(() => {
+                        el.setAttribute('style', fixedStyle);
+                    });
                     fixedCount++;
                     console.log('[PMS] Fixed style URL:', urlPath, '->', this.resolve(urlPath));
                 }
