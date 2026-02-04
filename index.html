@@ -82,7 +82,6 @@
                 };
                 
                 // CRITICAL: Fix paths in head elements IMMEDIATELY
-                const basePath = window.__PMS_BASE_PATH__;
                 if (basePath && basePath !== '/') {
                     // Fix favicon links in head immediately
                     const fixHeadLinks = () => {
