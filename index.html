@@ -44,68 +44,71 @@
                     window.__PMS_BASE_PATH__ = '/';
                 }
                 
-                // CRITICAL: Intercept and fix image src attributes BEFORE browser loads them
-                // This works for both dynamically created images and images in HTML
+                // CRITICAL: Fix paths in HTML BEFORE browser parses them
+                // Use MutationObserver on document to catch elements as they're added
                 const basePath = window.__PMS_BASE_PATH__;
                 
-                // Intercept setAttribute for ALL elements to fix paths before browser loads them
-                const originalSetAttribute = Element.prototype.setAttribute;
-                Element.prototype.setAttribute = function(name, value) {
-                    // Fix img src attributes
-                    if (this.tagName === 'IMG' && name === 'src' && 
-                        typeof value === 'string' && value.startsWith('/') && 
-                        !value.startsWith('http') && !value.startsWith('data:') && 
-                        !value.startsWith(basePath)) {
-                        value = basePath + value.substring(1);
-                        console.log('[PMS Interceptor] Fixed img src:', this.getAttribute('src'), '->', value);
-                    }
-                    // Fix link href attributes
-                    if ((this.tagName === 'LINK' || this.tagName === 'A') && name === 'href' && 
-                        typeof value === 'string' && value.startsWith('/') && 
-                        !value.startsWith('http') && !value.startsWith('mailto:') && 
-                        !value.startsWith('tel:') && !value.startsWith('#') && 
-                        !value.startsWith(basePath)) {
-                        value = basePath + value.substring(1);
-                    }
-                    // Fix style attributes with url()
-                    if (name === 'style' && typeof value === 'string' && value.includes('url(/') && !value.includes(basePath)) {
-                        value = value.replace(/url\s*\(\s*(['"]?)(\/[^'")]+)\1\s*\)/g, (match, quote, urlPath) => {
-                            if (!urlPath.startsWith(basePath)) {
-                                const fixed = `${quote}${basePath}${urlPath.substring(1)}${quote}`;
-                                console.log('[PMS Interceptor] Fixed style url:', urlPath, '->', fixed);
-                                return `url(${fixed})`;
-                            }
-                            return match;
-                        });
-                    }
-                    return originalSetAttribute.call(this, name, value);
-                };
-                
-                // Also intercept HTMLImageElement.src setter and getter
-                try {
-                    const imgProto = HTMLImageElement.prototype;
-                    const srcDescriptor = Object.getOwnPropertyDescriptor(imgProto, 'src') || 
-                                         Object.getOwnPropertyDescriptor(Object.getPrototypeOf(imgProto), 'src');
-                    if (srcDescriptor && srcDescriptor.set) {
-                        Object.defineProperty(imgProto, 'src', {
-                            set: function(value) {
-                                if (typeof value === 'string' && value.startsWith('/') && 
-                                    !value.startsWith('http') && !value.startsWith('data:') && 
-                                    !value.startsWith(basePath)) {
-                                    value = basePath + value.substring(1);
-                                    console.log('[PMS Interceptor] Fixed Image.src:', this.getAttribute('src'), '->', value);
+                // Create observer that runs BEFORE browser loads images
+                const fixPathsObserver = new MutationObserver((mutations) => {
+                    mutations.forEach((mutation) => {
+                        mutation.addedNodes.forEach((node) => {
+                            if (node.nodeType === 1) { // Element node
+                                // Fix img src attributes
+                                if (node.tagName === 'IMG') {
+                                    const src = node.getAttribute('src');
+                                    if (src && src.startsWith('/') && !src.startsWith('http') && !src.startsWith(basePath)) {
+                                        node.setAttribute('src', basePath + src.substring(1));
+                                        console.log('[PMS Observer] Fixed img src:', src, '->', basePath + src.substring(1));
+                                    }
                                 }
-                                srcDescriptor.set.call(this, value);
-                            },
-                            get: srcDescriptor.get || function() {
-                                return this.getAttribute('src') || '';
-                            },
-                            configurable: true,
-                            enumerable: true
+                                // Fix style attributes
+                                const style = node.getAttribute('style');
+                                if (style && style.includes('url(/') && !style.includes(basePath)) {
+                                    const fixedStyle = style.replace(/url\s*\(\s*(['"]?)(\/[^'")]+)\1\s*\)/g, (match, quote, urlPath) => {
+                                        if (!urlPath.startsWith(basePath)) {
+                                            return `url(${quote}${basePath}${urlPath.substring(1)}${quote})`;
+                                        }
+                                        return match;
+                                    });
+                                    if (fixedStyle !== style) {
+                                        node.setAttribute('style', fixedStyle);
+                                        console.log('[PMS Observer] Fixed style url');
+                                    }
+                                }
+                                // Recursively fix child elements
+                                node.querySelectorAll('img[src^="/"]').forEach(img => {
+                                    const src = img.getAttribute('src');
+                                    if (src && !src.startsWith('http') && !src.startsWith(basePath)) {
+                                        img.setAttribute('src', basePath + src.substring(1));
+                                    }
+                                });
+                                node.querySelectorAll('[style*="url(/"]').forEach(el => {
+                                    const style = el.getAttribute('style');
+                                    if (style && !style.includes(basePath)) {
+                                        const fixedStyle = style.replace(/url\s*\(\s*(['"]?)(\/[^'")]+)\1\s*\)/g, (match, quote, urlPath) => {
+                                            if (!urlPath.startsWith(basePath)) {
+                                                return `url(${quote}${basePath}${urlPath.substring(1)}${quote})`;
+                                            }
+                                            return match;
+                                        });
+                                        if (fixedStyle !== style) {
+                                            el.setAttribute('style', fixedStyle);
+                                        }
+                                    }
+                                });
+                            }
                         });
-                    }
-                } catch (e) {
-                    console.warn('[PMS] Could not intercept Image.src setter:', e);
+                    });
+                });
+                
+                // Start observing immediately, before body is parsed
+                if (document.documentElement) {
+                    fixPathsObserver.observe(document.documentElement, {
+                        childList: true,
+                        subtree: true,
+                        attributes: true,
+                        attributeFilter: ['src', 'style']
+                    });
                 }
                 
                 // CRITICAL: Fix paths in head elements IMMEDIATELY
