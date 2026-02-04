@@ -1,16 +1,69 @@
 // Get base path for components (works from root and subdirectories)
 function getBasePath() {
+    // Use the base path set in the head script if available
+    if (window.__BASE_PATH__ !== undefined) {
+        return window.__BASE_PATH__;
+    }
+    
+    // Fallback: detect GitHub Pages
+    const hostname = window.location.hostname;
+    const isGitHubPages = hostname.includes('github.io');
+    
+    if (isGitHubPages) {
+        // GitHub Pages: use absolute paths from repository root
+        const pathname = window.location.pathname;
+        const pathParts = pathname.split('/').filter(p => p && p !== 'index.html');
+        if (pathParts.length > 0) {
+            return `/${pathParts[0]}/`;
+        }
+        return '/'; // Fallback to root
+    }
+    
+    // Local development: use relative paths
     const path = window.location.pathname;
     // Count directory depth (excluding empty strings and index.html)
-    const parts = path.split('/').filter(p => p && p !== 'index.html');
+    const parts = path.split('/').filter(p => p && p !== 'index.html' && p !== '');
     // Depth is number of directories we're in
     // Root: 0, /contact: 1, /services/it-support: 2
     const depth = parts.length;
     return depth > 0 ? '../'.repeat(depth) : '';
 }
 
+// Fix absolute paths in HTML for GitHub Pages
+function fixAbsolutePaths() {
+    const basePath = getBasePath();
+    if (!basePath || basePath === '/') return; // No fix needed for root
+    
+    // Fix all img src attributes with absolute paths
+    document.querySelectorAll('img[src^="/"]').forEach(img => {
+        const originalSrc = img.getAttribute('src');
+        if (originalSrc && !originalSrc.startsWith(basePath) && !originalSrc.startsWith('http')) {
+            img.src = basePath + originalSrc.substring(1);
+        }
+    });
+    
+    // Fix all link href attributes with absolute paths (except external links)
+    document.querySelectorAll('a[href^="/"], link[href^="/"]').forEach(link => {
+        const originalHref = link.getAttribute('href');
+        if (originalHref && !originalHref.startsWith('http') && !originalHref.startsWith('mailto:') && !originalHref.startsWith('tel:') && !originalHref.startsWith(basePath)) {
+            link.href = basePath + originalHref.substring(1);
+        }
+    });
+    
+    // Fix inline styles with url() containing absolute paths
+    document.querySelectorAll('[style*="url(/"]').forEach(el => {
+        const style = el.getAttribute('style');
+        if (style && !style.includes(basePath)) {
+            const fixedStyle = style.replace(/url\((\/)/g, `url(${basePath.substring(0, basePath.length - 1)}/`);
+            el.setAttribute('style', fixedStyle);
+        }
+    });
+}
+
 // Load Components
 document.addEventListener('DOMContentLoaded', function() {
+    // Fix absolute paths first
+    fixAbsolutePaths();
     const basePath = getBasePath();
     
     // Load Header
@@ -23,6 +76,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const headerPlaceholder = document.getElementById('header-placeholder');
             if (headerPlaceholder) {
                 headerPlaceholder.innerHTML = data;
+                // Fix paths in loaded header
+                fixAbsolutePaths();
                 // Initialize navigation features after header loads
                 setActiveNavLink();
                 initMobileMenu();
@@ -47,6 +102,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const footerPlaceholder = document.getElementById('footer-placeholder');
             if (footerPlaceholder) {
                 footerPlaceholder.innerHTML = data;
+                // Fix paths in loaded footer
+                fixAbsolutePaths();
                 // Update copyright year
                 updateCopyrightYear();
             }
@@ -907,10 +964,12 @@ function initChatWidget() {
             if (!response.ok) throw new Error('Failed to load chat widget');
             return response.text();
         })
-        .then(html => {
-            document.body.insertAdjacentHTML('beforeend', html);
-            setupChatWidget();
-        })
+                    .then(html => {
+                        document.body.insertAdjacentHTML('beforeend', html);
+                        // Fix paths in loaded chat widget
+                        fixAbsolutePaths();
+                        setupChatWidget();
+                    })
         .catch(error => {
             console.error('Error loading chat widget:', error);
         });

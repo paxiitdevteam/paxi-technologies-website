@@ -25,6 +25,55 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="styles.css">
     
+    <!-- Base Path Fix for GitHub Pages -->
+    <script>
+        // Set base path immediately for GitHub Pages compatibility
+        (function() {
+            const hostname = window.location.hostname;
+            const isGitHubPages = hostname.includes('github.io');
+            let basePath = '';
+            
+            if (isGitHubPages) {
+                // Extract repo name from pathname
+                // Examples: 
+                //   /paxi-technologies-website/ -> paxi-technologies-website
+                //   /paxi-technologies-website/contact/ -> paxi-technologies-website
+                const pathname = window.location.pathname;
+                const pathParts = pathname.split('/').filter(p => p && p !== 'index.html');
+                
+                // First non-empty part should be repo name
+                if (pathParts.length > 0) {
+                    basePath = '/' + pathParts[0] + '/';
+                } else {
+                    // If pathname is just '/', try to get repo from hostname
+                    // username.github.io -> repo is in subdomain, but for project pages it's in path
+                    // For project pages: username.github.io/repo-name/
+                    // We need to check if we're at root or in a subdirectory
+                    // If we're at root with no path, we can't determine repo name
+                    // But typically GitHub Pages project sites have the repo in the path
+                    basePath = '/'; // Fallback
+                }
+                
+                window.__BASE_PATH__ = basePath;
+            } else {
+                window.__BASE_PATH__ = '';
+            }
+            
+            // Fix favicon paths if on GitHub Pages (run after DOM loads)
+            if (basePath && basePath !== '/') {
+                // Use a small delay to ensure links are in DOM
+                setTimeout(function() {
+                    document.querySelectorAll('link[rel*="icon"]').forEach(link => {
+                        const href = link.getAttribute('href');
+                        if (href && href.startsWith('/') && !href.startsWith(basePath) && !href.startsWith('http')) {
+                            link.href = basePath + href.substring(1);
+                        }
+                    });
+                }, 0);
+            }
+        })();
+    </script>
+    
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/media/favicons/favicon-placeholder.svg">
     <link rel="apple-touch-icon" href="/media/favicons/favicon-placeholder.svg">
