@@ -54,8 +54,10 @@
                     // Fix img src attributes
                     if (this.tagName === 'IMG' && name === 'src' && 
                         typeof value === 'string' && value.startsWith('/') && 
-                        !value.startsWith('http') && !value.startsWith(basePath)) {
+                        !value.startsWith('http') && !value.startsWith('data:') && 
+                        !value.startsWith(basePath)) {
                         value = basePath + value.substring(1);
+                        console.log('[PMS Interceptor] Fixed img src:', this.getAttribute('src'), '->', value);
                     }
                     // Fix link href attributes
                     if ((this.tagName === 'LINK' || this.tagName === 'A') && name === 'href' && 
@@ -69,7 +71,9 @@
                     if (name === 'style' && typeof value === 'string' && value.includes('url(/') && !value.includes(basePath)) {
                         value = value.replace(/url\s*\(\s*(['"]?)(\/[^'")]+)\1\s*\)/g, (match, quote, urlPath) => {
                             if (!urlPath.startsWith(basePath)) {
-                                return `url(${quote}${basePath}${urlPath.substring(1)}${quote})`;
+                                const fixed = `${quote}${basePath}${urlPath.substring(1)}${quote}`;
+                                console.log('[PMS Interceptor] Fixed style url:', urlPath, '->', fixed);
+                                return `url(${fixed})`;
                             }
                             return match;
                         });
@@ -77,10 +81,11 @@
                     return originalSetAttribute.call(this, name, value);
                 };
                 
-                // Also intercept HTMLImageElement.src setter
+                // Also intercept HTMLImageElement.src setter and getter
                 try {
                     const imgProto = HTMLImageElement.prototype;
-                    const srcDescriptor = Object.getOwnPropertyDescriptor(imgProto, 'src');
+                    const srcDescriptor = Object.getOwnPropertyDescriptor(imgProto, 'src') || 
+                                         Object.getOwnPropertyDescriptor(Object.getPrototypeOf(imgProto), 'src');
                     if (srcDescriptor && srcDescriptor.set) {
                         Object.defineProperty(imgProto, 'src', {
                             set: function(value) {
@@ -88,11 +93,15 @@
                                     !value.startsWith('http') && !value.startsWith('data:') && 
                                     !value.startsWith(basePath)) {
                                     value = basePath + value.substring(1);
+                                    console.log('[PMS Interceptor] Fixed Image.src:', this.getAttribute('src'), '->', value);
                                 }
                                 srcDescriptor.set.call(this, value);
                             },
-                            get: srcDescriptor.get,
-                            configurable: true
+                            get: srcDescriptor.get || function() {
+                                return this.getAttribute('src') || '';
+                            },
+                            configurable: true,
+                            enumerable: true
                         });
                     }
                 } catch (e) {
