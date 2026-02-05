@@ -82,8 +82,12 @@ chat_analytics.json
 user_data.json
 
 # Configuration files with secrets
-config.js
+# Allow public config.js (with defaults, no secrets) but protect local/production versions
+config.local.js
+config.production.js
+config.secrets.js
 config.json
+!config.js
 !config.example.js
 !config.example.json
 
