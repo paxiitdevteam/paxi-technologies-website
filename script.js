@@ -178,10 +178,55 @@ function setActiveNavLink() {
 }
 
 // Mobile Navigation Toggle
-// Note: CSS handles mobile dropdown visibility, but we add click handlers for better UX
 function initMobileMenu() {
+    const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+    const nav = document.querySelector('.nav');
     const dropdowns = document.querySelectorAll('.dropdown');
     
+    // Toggle main mobile menu
+    if (mobileMenuToggle && nav) {
+        mobileMenuToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const isExpanded = mobileMenuToggle.getAttribute('aria-expanded') === 'true';
+            mobileMenuToggle.setAttribute('aria-expanded', !isExpanded);
+            nav.classList.toggle('mobile-open', !isExpanded);
+            
+            // Prevent body scroll when menu is open
+            if (!isExpanded) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
+        });
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', function(e) {
+            if (nav.classList.contains('mobile-open') && 
+                !nav.contains(e.target) && 
+                !mobileMenuToggle.contains(e.target)) {
+                mobileMenuToggle.setAttribute('aria-expanded', 'false');
+                nav.classList.remove('mobile-open');
+                document.body.style.overflow = '';
+            }
+        });
+        
+        // Close menu on window resize to desktop
+        let resizeTimer;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function() {
+                if (window.innerWidth > 768) {
+                    mobileMenuToggle.setAttribute('aria-expanded', 'false');
+                    nav.classList.remove('mobile-open');
+                    document.body.style.overflow = '';
+                }
+            }, 250);
+        });
+    }
+    
+    // Handle Services dropdown on mobile
     dropdowns.forEach(dropdown => {
         const toggle = dropdown.querySelector('.dropdown-toggle');
         const menu = dropdown.querySelector('.dropdown-menu');
@@ -196,6 +241,7 @@ function initMobileMenu() {
                 // Only prevent default and toggle on mobile/tablet
                 if (window.innerWidth <= 768) {
                     e.preventDefault();
+                    e.stopPropagation();
                     const isVisible = menu.style.display === 'block';
                     menu.style.display = isVisible ? 'none' : 'block';
                     // Update ARIA expanded state
