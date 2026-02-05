@@ -1,0 +1,51 @@
+{
+  "meta": {
+    "title": "Paxi Technologies - Reliable IT Services for Growing Businesses",
+    "description": "Reliable IT support, project management, and consulting services for small and mid-sized businesses. We provide dependable IT services without enterprise complexity."
+  },
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "services": "Services",
+    "contact": "Contact"
+  },
+  "services": {
+    "itSupport": "IT Support Services",
+    "itProjectManagement": "IT Project Management",
+    "itConsulting": "IT Consulting"
+  },
+  "hero": {
+    "title": "Reliable IT Services for Growing Businesses",
+    "subtitle": "We provide the IT support, project management, and consulting services your business needs to operate smoothly and grow confidently.",
+    "cta": "Explore Our Services"
+  },
+  "footer": {
+    "description": "Reliable IT services for growing businesses. We provide IT support, project management, and consulting services tailored to small and mid-sized businesses.",
+    "services": "Services",
+    "company": "Company",
+    "legal": "Legal",
+    "aboutUs": "About Us",
+    "contactUs": "Contact Us",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
+    "cookiePolicy": "Cookie Policy",
+    "connectWithUs": "Connect With Us",
+    "allRightsReserved": "All rights reserved",
+    "backToTop": "Back to Top"
+  },
+  "chat": {
+    "title": "Chat with Us",
+    "status": "We're here to help",
+    "placeholder": "Type your message...",
+    "quickActions": {
+      "services": "Our Services",
+      "support": "IT Support",
+      "consulting": "Get Consultation"
+    }
+  },
+  "common": {
+    "learnMore": "Learn More",
+    "contactUs": "Contact Us",
+    "getStarted": "Get Started"
+  }
+}

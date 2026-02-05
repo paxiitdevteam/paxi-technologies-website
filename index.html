@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" id="html-root">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -319,10 +319,10 @@
         <div class="container">
             <div class="hero-content">
                 <div class="hero-text">
-                    <h1>Reliable IT Services for Growing Businesses</h1>
-                    <p class="hero-subheadline">We provide the IT support, project management, and consulting services your business needs to operate smoothly and grow confidently.</p>
+                    <h1 data-i18n="hero.title">Reliable IT Services for Growing Businesses</h1>
+                    <p class="hero-subheadline" data-i18n="hero.subtitle">We provide the IT support, project management, and consulting services your business needs to operate smoothly and grow confidently.</p>
                     <div class="hero-cta">
-                        <a href="#service-routing" class="btn btn-primary">Explore Our Services</a>
+                        <a href="#service-routing" class="btn btn-primary" data-i18n="hero.cta">Explore Our Services</a>
                     </div>
                 </div>
             </div>
@@ -484,6 +484,8 @@
     <!-- Footer will be loaded here -->
     <div id="footer-placeholder" role="contentinfo" aria-label="Site footer"></div>
 
+    <!-- Language Manager - Load before script.js -->
+    <script src="js/language-manager.js"></script>
     <script src="script.js" defer></script>
 </body>
 </html>

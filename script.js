@@ -35,6 +35,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Initialize navigation features after header loads
                 setActiveNavLink();
                 initMobileMenu();
+                // Initialize language switcher and apply translations
+                setTimeout(() => {
+                    initLanguageSwitcher();
+                    if (window.LanguageManager) {
+                        window.LanguageManager.applyTranslations();
+                    }
+                }, 50);
             }
         })
         .catch(error => {
@@ -62,6 +69,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 // Update copyright year
                 updateCopyrightYear();
+                // Apply translations after footer loads
+                if (window.LanguageManager) {
+                    window.LanguageManager.applyTranslations();
+                }
             }
         })
         .catch(error => {
@@ -440,6 +451,16 @@ function isValidEmail(email) {
 
 // Initialize form validation when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize language manager first (before other components)
+    if (typeof LanguageManager !== 'undefined') {
+        // Language manager will auto-initialize, but ensure it's ready
+        setTimeout(() => {
+            if (window.LanguageManager) {
+                window.LanguageManager.applyTranslations();
+            }
+        }, 100);
+    }
+    
     initContactForm();
     initScrollAnimations();
     initBackToTop();
@@ -1009,6 +1030,10 @@ function initChatWidget() {
                         // Small delay to ensure DOM is ready
                         setTimeout(() => {
                             setupChatWidget();
+                            // Apply translations after chat widget loads
+                            if (window.LanguageManager) {
+                                window.LanguageManager.applyTranslations();
+                            }
                         }, 10);
                     })
         .catch(error => {

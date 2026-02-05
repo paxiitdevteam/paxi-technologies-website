@@ -7,6 +7,12 @@
                     <img src="/media/logos/logo-placeholder.svg" alt="Paxi Technologies" class="logo-img" style="height: 32px; margin-right: 8px; vertical-align: middle;">
                 </a>
             </div>
+            <div class="language-switcher-container">
+                <select id="language-switcher" class="language-switcher" aria-label="Select language">
+                    <option value="en">EN</option>
+                    <option value="es">ES</option>
+                </select>
+            </div>
             <button class="mobile-menu-toggle" aria-label="Toggle navigation menu" aria-expanded="false">
                 <span class="hamburger-line"></span>
                 <span class="hamburger-line"></span>
@@ -14,17 +20,17 @@
             </button>
             <nav class="nav" role="navigation" aria-label="Main navigation">
                 <ul class="nav-list">
-                    <li><a href="/" class="nav-link" data-page="home">Home</a></li>
-                    <li><a href="/about" class="nav-link" data-page="about">About</a></li>
+                    <li><a href="/" class="nav-link" data-page="home" data-i18n="nav.home">Home</a></li>
+                    <li><a href="/about" class="nav-link" data-page="about" data-i18n="nav.about">About</a></li>
                     <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" aria-haspopup="true" aria-expanded="false">Services</a>
+                        <a href="#" class="dropdown-toggle" aria-haspopup="true" aria-expanded="false" data-i18n="nav.services">Services</a>
                         <ul class="dropdown-menu" role="menu">
-                            <li role="none"><a href="/services/it-support" role="menuitem">IT Support Services</a></li>
-                            <li role="none"><a href="/services/it-project-management" role="menuitem">IT Project Management</a></li>
-                            <li role="none"><a href="/services/it-consulting" role="menuitem">IT Consulting</a></li>
+                            <li role="none"><a href="/services/it-support" role="menuitem" data-i18n="services.itSupport">IT Support Services</a></li>
+                            <li role="none"><a href="/services/it-project-management" role="menuitem" data-i18n="services.itProjectManagement">IT Project Management</a></li>
+                            <li role="none"><a href="/services/it-consulting" role="menuitem" data-i18n="services.itConsulting">IT Consulting</a></li>
                         </ul>
                     </li>
-                    <li><a href="/contact" class="nav-link" data-page="contact">Contact</a></li>
+                    <li><a href="/contact" class="nav-link" data-page="contact" data-i18n="nav.contact">Contact</a></li>
                 </ul>
             </nav>
         </div>

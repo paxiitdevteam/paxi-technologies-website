@@ -1,0 +1,51 @@
+{
+  "meta": {
+    "title": "Paxi Technologies - Servicios de TI Confiables para Empresas en Crecimiento",
+    "description": "Servicios confiables de soporte de TI, gestión de proyectos y consultoría para pequeñas y medianas empresas. Proporcionamos servicios de TI confiables sin la complejidad empresarial."
+  },
+  "nav": {
+    "home": "Inicio",
+    "about": "Acerca de",
+    "services": "Servicios",
+    "contact": "Contacto"
+  },
+  "services": {
+    "itSupport": "Servicios de Soporte de TI",
+    "itProjectManagement": "Gestión de Proyectos de TI",
+    "itConsulting": "Consultoría de TI"
+  },
+  "hero": {
+    "title": "Servicios de TI Confiables para Empresas en Crecimiento",
+    "subtitle": "Proporcionamos los servicios de soporte de TI, gestión de proyectos y consultoría que su empresa necesita para operar sin problemas y crecer con confianza.",
+    "cta": "Explorar Nuestros Servicios"
+  },
+  "footer": {
+    "description": "Servicios de TI confiables para empresas en crecimiento. Proporcionamos servicios de soporte de TI, gestión de proyectos y consultoría adaptados a pequeñas y medianas empresas.",
+    "services": "Servicios",
+    "company": "Empresa",
+    "legal": "Legal",
+    "aboutUs": "Acerca de Nosotros",
+    "contactUs": "Contáctenos",
+    "privacyPolicy": "Política de Privacidad",
+    "termsOfService": "Términos de Servicio",
+    "cookiePolicy": "Política de Cookies",
+    "connectWithUs": "Conéctese con Nosotros",
+    "allRightsReserved": "Todos los derechos reservados",
+    "backToTop": "Volver Arriba"
+  },
+  "chat": {
+    "title": "Chatea con Nosotros",
+    "status": "Estamos aquí para ayudar",
+    "placeholder": "Escribe tu mensaje...",
+    "quickActions": {
+      "services": "Nuestros Servicios",
+      "support": "Soporte de TI",
+      "consulting": "Obtener Consulta"
+    }
+  },
+  "common": {
+    "learnMore": "Saber Más",
+    "contactUs": "Contáctenos",
+    "getStarted": "Comenzar"
+  }
+}
