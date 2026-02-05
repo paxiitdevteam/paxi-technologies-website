@@ -1139,9 +1139,15 @@ function setupChatWidget() {
     if (chatBackdrop) {
         const handleBackdropClose = (e) => {
             // Only close if clicking directly on backdrop, not if event bubbled from chat window
-            if (e.target === chatBackdrop) {
+            // Also check if the click is actually on the backdrop and not on chat window
+            const clickedElement = e.target;
+            const isBackdrop = clickedElement === chatBackdrop || chatBackdrop.contains(clickedElement);
+            const isChatWindow = chatWindow && (chatWindow.contains(clickedElement) || clickedElement === chatWindow);
+            
+            if (isBackdrop && !isChatWindow) {
                 e.preventDefault();
                 e.stopPropagation();
+                console.log('Backdrop clicked, closing chat'); // Debug log
                 toggleChatWindow(false);
             }
         };
@@ -1150,12 +1156,16 @@ function setupChatWidget() {
     }
     
     // Prevent clicks inside chat window from closing it (stop propagation to backdrop)
-    // BUT allow close button clicks to work
+    // BUT allow close button and interactive elements to work
     if (chatWindow) {
         const handleChatWindowClick = (e) => {
             // Don't stop propagation for close button - let it work normally
             if (e.target.closest('#chat-close')) {
                 return; // Let close button handle its own event
+            }
+            // Don't stop propagation for interactive elements (buttons, links, inputs)
+            if (e.target.closest('button, a, input, textarea, select')) {
+                return; // Let interactive elements work normally
             }
             // Stop propagation to prevent backdrop from receiving the event
             e.stopPropagation();

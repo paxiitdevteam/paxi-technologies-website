@@ -2854,13 +2854,20 @@ section.hero-section .hero-subheadline,
     /* Ensure close button is always clickable and above everything */
     .chat-close {
         pointer-events: auto !important;
-        z-index: 1001 !important; /* Above chat window and all content */
-        position: relative;
+        z-index: 1002 !important; /* Above chat window (999), header (10), and all content */
+        position: relative !important;
         cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
     
     .chat-close svg {
         pointer-events: none; /* SVG doesn't intercept clicks */
+        stroke: white !important;
+        stroke-width: 3 !important;
     }
     
     .chat-header {
@@ -2869,8 +2876,12 @@ section.hero-section .hero-subheadline,
         flex-shrink: 0;
         position: sticky;
         top: 0;
-        z-index: 10;
+        z-index: 1000; /* Higher z-index to ensure header and close button are above content */
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
     }
     
     .chat-header-content {
@@ -2892,30 +2903,39 @@ section.hero-section .hero-subheadline,
     }
     
     .chat-close {
-        background: rgba(0, 0, 0, 0.5) !important; /* Darker background for visibility */
-        padding: var(--space-sm);
-        min-width: 44px; /* Touch target size for mobile */
-        min-height: 44px;
-        margin-left: var(--space-sm);
-        flex-shrink: 0;
-        border: 2px solid rgba(255, 255, 255, 0.9) !important; /* Bright white border */
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important; /* Stronger shadow */
+        background: rgba(0, 0, 0, 0.7) !important; /* Even darker background for better visibility */
+        padding: var(--space-sm) !important;
+        min-width: 44px !important; /* Touch target size for mobile */
+        min-height: 44px !important;
+        width: 44px !important;
+        height: 44px !important;
+        margin-left: var(--space-sm) !important;
+        flex-shrink: 0 !important;
+        border: 3px solid rgba(255, 255, 255, 1) !important; /* Bright white border, thicker */
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6) !important; /* Even stronger shadow */
         display: flex !important; /* Ensure it's displayed */
         align-items: center !important;
         justify-content: center !important;
         opacity: 1 !important; /* Fully visible */
         visibility: visible !important;
+        z-index: 1002 !important; /* Above header (1000) */
+        position: relative !important;
+        border-radius: 50% !important; /* Circular button */
+        cursor: pointer !important;
+        pointer-events: auto !important;
     }
     
     .chat-close:active {
-        background: rgba(255, 255, 255, 0.5) !important;
-        transform: scale(0.95);
+        background: rgba(255, 255, 255, 0.8) !important;
+        transform: scale(0.9);
     }
     
     .chat-close svg {
-        width: 24px;
-        height: 24px;
-        stroke-width: 3; /* Thicker lines for visibility */
+        width: 24px !important;
+        height: 24px !important;
+        stroke-width: 3 !important; /* Thicker lines for visibility */
+        stroke: white !important;
+        pointer-events: none !important; /* SVG doesn't intercept clicks */
     }
     
     .chat-messages {
