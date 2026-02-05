@@ -45,23 +45,62 @@
                 }
                 
                 // CRITICAL: Fix paths in HTML BEFORE browser parses them
-                // Use MutationObserver on document to catch elements as they're added
+                // Intercept HTML parsing by overriding innerHTML setter
                 const basePath = window.__PMS_BASE_PATH__;
+                
+                // Override innerHTML to fix paths before browser parses HTML
+                const originalInnerHTMLSetter = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML')?.set;
+                if (originalInnerHTMLSetter && basePath && basePath !== '/') {
+                    Object.defineProperty(Element.prototype, 'innerHTML', {
+                        set: function(value) {
+                            if (typeof value === 'string') {
+                                // Fix img src attributes in HTML string
+                                value = value.replace(/src="(\/[^"]+)"/g, (match, path) => {
+                                    if (!path.startsWith('http') && !path.startsWith('data:') && !path.startsWith(basePath)) {
+                                        return `src="${basePath}${path.substring(1)}"`;
+                                    }
+                                    return match;
+                                });
+                                // Fix style url() in HTML string
+                                value = value.replace(/style="([^"]*url\(['"]?\/[^'")]+['"]?\)[^"]*)"/g, (match, styleContent) => {
+                                    if (!styleContent.includes(basePath)) {
+                                        const fixed = styleContent.replace(/url\((['"]?)(\/[^'")]+)\1\)/g, (urlMatch, quote, urlPath) => {
+                                            if (!urlPath.startsWith(basePath)) {
+                                                return `url(${quote}${basePath}${urlPath.substring(1)}${quote})`;
+                                            }
+                                            return urlMatch;
+                                        });
+                                        return `style="${fixed}"`;
+                                    }
+                                    return match;
+                                });
+                            }
+                            return originalInnerHTMLSetter.call(this, value);
+                        },
+                        get: Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML')?.get,
+                        configurable: true
+                    });
+                }
                 
                 // Create observer that runs BEFORE browser loads images
                 const fixPathsObserver = new MutationObserver((mutations) => {
                     mutations.forEach((mutation) => {
                         mutation.addedNodes.forEach((node) => {
                             if (node.nodeType === 1) { // Element node
-                                // Fix img src attributes
+                                // Fix img src attributes IMMEDIATELY
                                 if (node.tagName === 'IMG') {
                                     const src = node.getAttribute('src');
-                                    if (src && src.startsWith('/') && !src.startsWith('http') && !src.startsWith(basePath)) {
-                                        node.setAttribute('src', basePath + src.substring(1));
-                                        console.log('[PMS Observer] Fixed img src:', src, '->', basePath + src.substring(1));
+                                    if (src && src.startsWith('/') && !src.startsWith('http') && !src.startsWith('data:') && !src.startsWith(basePath)) {
+                                        const fixedSrc = basePath + src.substring(1);
+                                        // Remove and re-set to force browser to use new path
+                                        node.removeAttribute('src');
+                                        requestAnimationFrame(() => {
+                                            node.setAttribute('src', fixedSrc);
+                                        });
+                                        console.log('[PMS Observer] Fixed img src:', src, '->', fixedSrc);
                                     }
                                 }
-                                // Fix style attributes
+                                // Fix style attributes IMMEDIATELY
                                 const style = node.getAttribute('style');
                                 if (style && style.includes('url(/') && !style.includes(basePath)) {
                                     const fixedStyle = style.replace(/url\s*\(\s*(['"]?)(\/[^'")]+)\1\s*\)/g, (match, quote, urlPath) => {
@@ -71,31 +110,42 @@
                                         return match;
                                     });
                                     if (fixedStyle !== style) {
-                                        node.setAttribute('style', fixedStyle);
+                                        node.removeAttribute('style');
+                                        requestAnimationFrame(() => {
+                                            node.setAttribute('style', fixedStyle);
+                                        });
                                         console.log('[PMS Observer] Fixed style url');
                                     }
                                 }
-                                // Recursively fix child elements
-                                node.querySelectorAll('img[src^="/"]').forEach(img => {
-                                    const src = img.getAttribute('src');
-                                    if (src && !src.startsWith('http') && !src.startsWith(basePath)) {
-                                        img.setAttribute('src', basePath + src.substring(1));
-                                    }
-                                });
-                                node.querySelectorAll('[style*="url(/"]').forEach(el => {
-                                    const style = el.getAttribute('style');
-                                    if (style && !style.includes(basePath)) {
-                                        const fixedStyle = style.replace(/url\s*\(\s*(['"]?)(\/[^'")]+)\1\s*\)/g, (match, quote, urlPath) => {
-                                            if (!urlPath.startsWith(basePath)) {
-                                                return `url(${quote}${basePath}${urlPath.substring(1)}${quote})`;
-                                            }
-                                            return match;
-                                        });
-                                        if (fixedStyle !== style) {
-                                            el.setAttribute('style', fixedStyle);
+                                // Recursively fix child elements IMMEDIATELY
+                                const fixChildImages = () => {
+                                    node.querySelectorAll('img[src^="/"]').forEach(img => {
+                                        const src = img.getAttribute('src');
+                                        if (src && !src.startsWith('http') && !src.startsWith('data:') && !src.startsWith(basePath)) {
+                                            const fixedSrc = basePath + src.substring(1);
+                                            img.removeAttribute('src');
+                                            img.setAttribute('src', fixedSrc);
                                         }
-                                    }
-                                });
+                                    });
+                                    node.querySelectorAll('[style*="url(/"]').forEach(el => {
+                                        const style = el.getAttribute('style');
+                                        if (style && !style.includes(basePath)) {
+                                            const fixedStyle = style.replace(/url\s*\(\s*(['"]?)(\/[^'")]+)\1\s*\)/g, (match, quote, urlPath) => {
+                                                if (!urlPath.startsWith(basePath)) {
+                                                    return `url(${quote}${basePath}${urlPath.substring(1)}${quote})`;
+                                                }
+                                                return match;
+                                            });
+                                            if (fixedStyle !== style) {
+                                                el.removeAttribute('style');
+                                                el.setAttribute('style', fixedStyle);
+                                            }
+                                        }
+                                    });
+                                };
+                                // Fix immediately and on next frame
+                                fixChildImages();
+                                requestAnimationFrame(fixChildImages);
                             }
                         });
                     });
@@ -110,12 +160,18 @@
                         attributeFilter: ['src', 'style']
                     });
                     
-                    // Also fix any existing elements immediately
-                    setTimeout(() => {
+                    // Also fix any existing elements immediately and repeatedly
+                    const fixExisting = () => {
                         document.querySelectorAll('img[src^="/"]').forEach(img => {
                             const src = img.getAttribute('src');
-                            if (src && !src.startsWith('http') && !src.startsWith(basePath)) {
-                                img.setAttribute('src', basePath + src.substring(1));
+                            if (src && !src.startsWith('http') && !src.startsWith('data:') && !src.startsWith(basePath)) {
+                                const fixedSrc = basePath + src.substring(1);
+                                // Check if already fixed to avoid infinite loops
+                                if (!img.src.includes(basePath) && img.src !== fixedSrc) {
+                                    img.removeAttribute('src');
+                                    img.setAttribute('src', fixedSrc);
+                                    console.log('[PMS] Fixed existing img:', src, '->', fixedSrc);
+                                }
                             }
                         });
                         document.querySelectorAll('[style*="url(/"]').forEach(el => {
@@ -128,11 +184,20 @@
                                     return match;
                                 });
                                 if (fixedStyle !== style) {
+                                    el.removeAttribute('style');
                                     el.setAttribute('style', fixedStyle);
+                                    console.log('[PMS] Fixed existing style');
                                 }
                             }
                         });
-                    }, 0);
+                    };
+                    
+                    // Run immediately and multiple times to catch all elements
+                    fixExisting();
+                    setTimeout(fixExisting, 0);
+                    setTimeout(fixExisting, 10);
+                    setTimeout(fixExisting, 50);
+                    setTimeout(fixExisting, 100);
                 }
                 
                 // CRITICAL: Fix paths in head elements IMMEDIATELY
