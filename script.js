@@ -183,32 +183,52 @@ function initMobileMenu() {
     const nav = document.querySelector('.nav');
     const dropdowns = document.querySelectorAll('.dropdown');
     
+    // Create backdrop element if it doesn't exist
+    let backdrop = document.querySelector('.mobile-menu-backdrop');
+    if (!backdrop) {
+        backdrop = document.createElement('div');
+        backdrop.className = 'mobile-menu-backdrop';
+        document.body.appendChild(backdrop);
+    }
+    
     // Toggle main mobile menu
     if (mobileMenuToggle && nav) {
-        mobileMenuToggle.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
+        const toggleMenu = function(open) {
             const isExpanded = mobileMenuToggle.getAttribute('aria-expanded') === 'true';
-            mobileMenuToggle.setAttribute('aria-expanded', !isExpanded);
-            nav.classList.toggle('mobile-open', !isExpanded);
+            const shouldOpen = open !== undefined ? open : !isExpanded;
+            
+            mobileMenuToggle.setAttribute('aria-expanded', shouldOpen);
+            nav.classList.toggle('mobile-open', shouldOpen);
+            backdrop.classList.toggle('active', shouldOpen);
             
             // Prevent body scroll when menu is open
-            if (!isExpanded) {
+            if (shouldOpen) {
                 document.body.style.overflow = 'hidden';
             } else {
                 document.body.style.overflow = '';
             }
+        };
+        
+        mobileMenuToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleMenu();
         });
         
-        // Close menu when clicking outside
+        // Close menu when clicking backdrop
+        backdrop.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleMenu(false);
+        });
+        
+        // Close menu when clicking outside (but not on backdrop, handled above)
         document.addEventListener('click', function(e) {
             if (nav.classList.contains('mobile-open') && 
                 !nav.contains(e.target) && 
-                !mobileMenuToggle.contains(e.target)) {
-                mobileMenuToggle.setAttribute('aria-expanded', 'false');
-                nav.classList.remove('mobile-open');
-                document.body.style.overflow = '';
+                !mobileMenuToggle.contains(e.target) &&
+                !backdrop.contains(e.target)) {
+                toggleMenu(false);
             }
         });
         
@@ -218,11 +238,16 @@ function initMobileMenu() {
             clearTimeout(resizeTimer);
             resizeTimer = setTimeout(function() {
                 if (window.innerWidth > 768) {
-                    mobileMenuToggle.setAttribute('aria-expanded', 'false');
-                    nav.classList.remove('mobile-open');
-                    document.body.style.overflow = '';
+                    toggleMenu(false);
                 }
             }, 250);
+        });
+        
+        // Close menu on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && nav.classList.contains('mobile-open')) {
+                toggleMenu(false);
+            }
         });
     }
     

@@ -184,6 +184,25 @@ body {
     transform: rotate(-45deg) translate(7px, -7px);
 }
 
+/* Mobile Menu Backdrop */
+.mobile-menu-backdrop {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.mobile-menu-backdrop.active {
+    display: block;
+    opacity: 1;
+}
+
 /* Dropdown Menu */
 .dropdown {
     position: relative;
@@ -1668,17 +1687,30 @@ section.hero-section .hero-subheadline,
     }
 
     .header-content {
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
     }
 
+    /* Mobile Menu - Slide in from left */
     .nav {
-        display: none;
-        width: 100%;
-        order: 3;
+        display: block;
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 280px;
+        max-width: 85vw;
+        height: 100vh;
+        height: 100dvh; /* Dynamic viewport height for mobile */
+        background-color: var(--bg-white);
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        overflow-y: auto;
+        transition: left 0.3s ease;
+        padding: var(--space-xl) var(--space-lg);
+        padding-top: calc(var(--space-xl) + 80px); /* Account for header height */
     }
 
     .nav.mobile-open {
-        display: block;
+        left: 0;
     }
 
     .nav-list {
@@ -1686,7 +1718,29 @@ section.hero-section .hero-subheadline,
         gap: var(--space-md);
         width: 100%;
         align-items: flex-start;
-        padding: var(--space-md) 0;
+        padding: 0;
+        margin: 0;
+    }
+
+    .nav-list li {
+        width: 100%;
+    }
+
+    .nav-list a {
+        display: block;
+        width: 100%;
+        padding: var(--space-sm) 0;
+    }
+
+    /* Mobile Dropdown Menu - Better positioning */
+    .dropdown {
+        width: 100%;
+    }
+
+    .dropdown-toggle {
+        width: 100%;
+        text-align: left;
+        padding: var(--space-sm) 0;
     }
 
     .dropdown-menu {
@@ -1696,10 +1750,31 @@ section.hero-section .hero-subheadline,
         transform: none;
         box-shadow: none;
         border: none;
-        margin-top: var(--space-sm);
+        margin-top: var(--space-xs);
+        margin-left: var(--space-lg); /* Indent submenu items */
         background: transparent;
         padding: 0;
+        min-width: auto;
+        width: calc(100% - var(--space-lg));
+        display: none; /* Hidden by default on mobile */
     }
+
+    .dropdown-menu[style*="block"] {
+        display: block !important;
+    }
+
+    .dropdown-menu li {
+        width: 100%;
+    }
+
+    .dropdown-menu a {
+        padding: var(--space-xs) 0;
+        font-size: var(--font-size-sm);
+        color: var(--text-color);
+        opacity: 0.9;
+    }
+
+    /* Dropdown menu styles are now handled in the main mobile section above */
 
     .hero {
         padding: var(--space-3xl) 0;
