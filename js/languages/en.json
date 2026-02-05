@@ -19,6 +19,35 @@
     "subtitle": "We provide the IT support, project management, and consulting services your business needs to operate smoothly and grow confidently.",
     "cta": "Explore Our Services"
   },
+  "pages": {
+    "about": {
+      "title": "About Paxi Technologies",
+      "subtitle": "We're committed to providing reliable IT services that help small and mid-sized businesses operate smoothly and grow confidently. Our approach is straightforward, accountable, and designed for businesses like yours."
+    },
+    "contact": {
+      "title": "Contact Us",
+      "subtitle": "We use this form to route inquiries to the correct team. Select the subject that best matches your request and provide a brief message. We review all inquiries and respond during normal business hours.",
+      "formTitle": "Send Us a Message",
+      "formSubtitle": "Fill out the form below with your information and inquiry. We'll review your message and respond during normal business hours.",
+      "name": "Name",
+      "email": "Email",
+      "subject": "Subject",
+      "message": "Message",
+      "submit": "Send Message"
+    },
+    "itSupport": {
+      "title": "Reliable IT Support That Keeps Your Business Running",
+      "subtitle": "Ongoing technical support for your computers, networks, and systems. Keeps your technology running smoothly so your business can operate without interruption."
+    },
+    "itProjectManagement": {
+      "title": "IT Project Management That Delivers Results",
+      "subtitle": "Expert project management for your IT initiatives. Ensures your projects are completed on time, within budget, and meet your business objectives."
+    },
+    "itConsulting": {
+      "title": "IT Consulting That Helps You Make Informed Decisions",
+      "subtitle": "Independent technology consulting to help you make informed decisions about your IT infrastructure, systems, and strategy."
+    }
+  },
   "footer": {
     "description": "Reliable IT services for growing businesses. We provide IT support, project management, and consulting services tailored to small and mid-sized businesses.",
     "services": "Services",

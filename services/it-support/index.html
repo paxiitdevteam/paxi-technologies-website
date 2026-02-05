@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" id="html-root">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -43,8 +43,8 @@
             <div class="container">
                 <div class="hero-content">
                     <div class="hero-text">
-                        <h1>Reliable IT Support That Keeps Your Business Running</h1>
-                        <p class="hero-subheadline">Ongoing technical support for your computers, networks, and systems. Keeps your technology running smoothly so your business can operate without interruption.</p>
+                        <h1 data-i18n="pages.itSupport.title">Reliable IT Support That Keeps Your Business Running</h1>
+                        <p class="hero-subheadline" data-i18n="pages.itSupport.subtitle">Ongoing technical support for your computers, networks, and systems. Keeps your technology running smoothly so your business can operate without interruption.</p>
                     </div>
                 </div>
             </div>
@@ -194,6 +194,8 @@
     <!-- Footer will be loaded here -->
     <div id="footer-placeholder" role="contentinfo" aria-label="Site footer"></div>
 
+    <!-- Language Manager - Load before script.js -->
+    <script src="../../js/language-manager.js"></script>
     <script src="../../script.js" defer></script>
 </body>
 </html>

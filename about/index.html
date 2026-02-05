@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" id="html-root">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -43,8 +43,8 @@
             <div class="container">
                 <div class="hero-content">
                     <div class="hero-text">
-                        <h1>About Paxi Technologies</h1>
-                        <p class="hero-subheadline">We're committed to providing reliable IT services that help small and mid-sized businesses operate smoothly and grow confidently. Our approach is straightforward, accountable, and designed for businesses like yours.</p>
+                        <h1 data-i18n="pages.about.title">About Paxi Technologies</h1>
+                        <p class="hero-subheadline" data-i18n="pages.about.subtitle">We're committed to providing reliable IT services that help small and mid-sized businesses operate smoothly and grow confidently. Our approach is straightforward, accountable, and designed for businesses like yours.</p>
                     </div>
                 </div>
             </div>
@@ -190,6 +190,8 @@
     <!-- Footer will be loaded here -->
     <div id="footer-placeholder" role="contentinfo" aria-label="Site footer"></div>
 
+    <!-- Language Manager - Load before script.js -->
+    <script src="../js/language-manager.js"></script>
     <script src="../script.js" defer></script>
 </body>
 </html>

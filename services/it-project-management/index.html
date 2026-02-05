@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" id="html-root">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -43,8 +43,8 @@
             <div class="container">
                 <div class="hero-content">
                     <div class="hero-text">
-                        <h1>IT Projects Delivered On Time, On Budget, On Target</h1>
-                        <p class="hero-subheadline">Expert project management for your IT initiatives. We own the planning, coordination, and oversight so you can focus on your business while your project moves forward with confidence.</p>
+                        <h1 data-i18n="pages.itProjectManagement.title">IT Project Management That Delivers Results</h1>
+                        <p class="hero-subheadline" data-i18n="pages.itProjectManagement.subtitle">Expert project management for your IT initiatives. Ensures your projects are completed on time, within budget, and meet your business objectives.</p>
                     </div>
                 </div>
             </div>
@@ -197,6 +197,8 @@
     <!-- Footer will be loaded here -->
     <div id="footer-placeholder" role="contentinfo" aria-label="Site footer"></div>
 
+    <!-- Language Manager - Load before script.js -->
+    <script src="../../js/language-manager.js"></script>
     <script src="../../script.js" defer></script>
 </body>
 </html>

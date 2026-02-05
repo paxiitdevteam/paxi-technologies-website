@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" id="html-root">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -43,8 +43,8 @@
             <div class="container">
                 <div class="hero-content">
                     <div class="hero-text">
-                        <h1>Clear IT Guidance for Better Technology Decisions</h1>
-                        <p class="hero-subheadline">Independent IT consulting to help you make informed decisions about your technology investments. We assess your situation, explain your options, and provide recommendations—without pressure or obligation.</p>
+                        <h1 data-i18n="pages.itConsulting.title">IT Consulting That Helps You Make Informed Decisions</h1>
+                        <p class="hero-subheadline" data-i18n="pages.itConsulting.subtitle">Independent technology consulting to help you make informed decisions about your IT infrastructure, systems, and strategy.</p>
                     </div>
                 </div>
             </div>
@@ -194,6 +194,8 @@
     <!-- Footer will be loaded here -->
     <div id="footer-placeholder" role="contentinfo" aria-label="Site footer"></div>
 
+    <!-- Language Manager - Load before script.js -->
+    <script src="../../js/language-manager.js"></script>
     <script src="../../script.js" defer></script>
 </body>
 </html>

@@ -38,10 +38,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Initialize language switcher and apply translations
                 setTimeout(() => {
                     initLanguageSwitcher();
+                    // Apply translations after header loads (header contains language switcher)
                     if (window.LanguageManager) {
                         window.LanguageManager.applyTranslations();
                     }
-                }, 50);
+                }, 100);
             }
         })
         .catch(error => {
@@ -70,9 +71,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Update copyright year
                 updateCopyrightYear();
                 // Apply translations after footer loads
-                if (window.LanguageManager) {
-                    window.LanguageManager.applyTranslations();
-                }
+                setTimeout(() => {
+                    if (window.LanguageManager) {
+                        window.LanguageManager.applyTranslations();
+                    }
+                }, 50);
             }
         })
         .catch(error => {
@@ -451,15 +454,22 @@ function isValidEmail(email) {
 
 // Initialize form validation when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize language manager first (before other components)
-    if (typeof LanguageManager !== 'undefined') {
-        // Language manager will auto-initialize, but ensure it's ready
-        setTimeout(() => {
-            if (window.LanguageManager) {
-                window.LanguageManager.applyTranslations();
-            }
-        }, 100);
-    }
+    // Wait for language manager to initialize and apply translations
+    const applyTranslationsWhenReady = () => {
+        if (window.LanguageManager) {
+            window.LanguageManager.applyTranslations();
+            // Also apply after a short delay to catch dynamically loaded content
+            setTimeout(() => {
+                if (window.LanguageManager) {
+                    window.LanguageManager.applyTranslations();
+                }
+            }, 200);
+        } else {
+            // Retry if LanguageManager not ready yet
+            setTimeout(applyTranslationsWhenReady, 50);
+        }
+    };
+    applyTranslationsWhenReady();
     
     initContactForm();
     initScrollAnimations();

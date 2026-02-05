@@ -19,6 +19,35 @@
     "subtitle": "Proporcionamos los servicios de soporte de TI, gestión de proyectos y consultoría que su empresa necesita para operar sin problemas y crecer con confianza.",
     "cta": "Explorar Nuestros Servicios"
   },
+  "pages": {
+    "about": {
+      "title": "Acerca de Paxi Technologies",
+      "subtitle": "Estamos comprometidos a proporcionar servicios de TI confiables que ayuden a las pequeñas y medianas empresas a operar sin problemas y crecer con confianza. Nuestro enfoque es directo, responsable y diseñado para empresas como la suya."
+    },
+    "contact": {
+      "title": "Contáctenos",
+      "subtitle": "Utilizamos este formulario para dirigir las consultas al equipo correcto. Seleccione el asunto que mejor coincida con su solicitud y proporcione un mensaje breve. Revisamos todas las consultas y respondemos durante el horario comercial normal.",
+      "formTitle": "Envíenos un Mensaje",
+      "formSubtitle": "Complete el formulario a continuación con su información y consulta. Revisaremos su mensaje y responderemos durante el horario comercial normal.",
+      "name": "Nombre",
+      "email": "Correo Electrónico",
+      "subject": "Asunto",
+      "message": "Mensaje",
+      "submit": "Enviar Mensaje"
+    },
+    "itSupport": {
+      "title": "Soporte de TI Confiable que Mantiene su Negocio Funcionando",
+      "subtitle": "Soporte técnico continuo para sus computadoras, redes y sistemas. Mantiene su tecnología funcionando sin problemas para que su negocio pueda operar sin interrupciones."
+    },
+    "itProjectManagement": {
+      "title": "Gestión de Proyectos de TI que Entrega Resultados",
+      "subtitle": "Gestión experta de proyectos para sus iniciativas de TI. Asegura que sus proyectos se completen a tiempo, dentro del presupuesto y cumplan con sus objetivos comerciales."
+    },
+    "itConsulting": {
+      "title": "Consultoría de TI que le Ayuda a Tomar Decisiones Informadas",
+      "subtitle": "Consultoría tecnológica independiente para ayudarle a tomar decisiones informadas sobre su infraestructura de TI, sistemas y estrategia."
+    }
+  },
   "footer": {
     "description": "Servicios de TI confiables para empresas en crecimiento. Proporcionamos servicios de soporte de TI, gestión de proyectos y consultoría adaptados a pequeñas y medianas empresas.",
     "services": "Servicios",

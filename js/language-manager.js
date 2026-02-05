@@ -135,8 +135,23 @@ class LanguageManager {
             const key = element.getAttribute('data-i18n');
             const translation = this.t(key);
             
-            if (element.tagName === 'INPUT' && element.type === 'text') {
-                element.placeholder = translation;
+            // Handle different element types
+            if (element.tagName === 'INPUT') {
+                if (element.type === 'text' || element.type === 'email') {
+                    if (element.hasAttribute('placeholder')) {
+                        element.setAttribute('placeholder', translation);
+                    } else {
+                        element.value = translation;
+                    }
+                }
+            } else if (element.tagName === 'TEXTAREA') {
+                if (element.hasAttribute('placeholder')) {
+                    element.setAttribute('placeholder', translation);
+                }
+            } else if (element.tagName === 'LABEL') {
+                element.textContent = translation;
+            } else if (element.tagName === 'OPTION') {
+                element.textContent = translation;
             } else if (element.hasAttribute('placeholder')) {
                 element.setAttribute('placeholder', translation);
             } else if (element.hasAttribute('aria-label')) {
