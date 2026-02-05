@@ -2840,6 +2840,13 @@ section.hero-section .hero-subheadline,
         pointer-events: auto !important;
         opacity: 0.5;
         z-index: 998; /* Below chat window (999) but above content */
+        /* Ensure backdrop doesn't intercept clicks meant for chat window */
+        touch-action: none; /* Prevent touch gestures on backdrop */
+    }
+    
+    /* Ensure backdrop doesn't have any children that could intercept clicks */
+    .chat-window-backdrop.active * {
+        pointer-events: none !important; /* No child elements should be clickable */
     }
     
     /* Ensure chat window and its content are above backdrop */

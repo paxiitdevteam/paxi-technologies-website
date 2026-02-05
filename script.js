@@ -1058,14 +1058,18 @@ function setupChatWidget() {
             chatWindow.style.pointerEvents = 'auto';
             chatWindow.style.opacity = '1';
             chatWindow.style.visibility = 'visible';
+            chatWindow.style.zIndex = '999'; // Ensure chat window is above backdrop
             
             if (chatBackdrop) {
                 chatBackdrop.classList.add('active');
                 if (isMobile) {
                     chatBackdrop.style.display = 'block';
                     chatBackdrop.style.pointerEvents = 'auto';
+                    chatBackdrop.style.zIndex = '998'; // Ensure backdrop is below chat window
                 }
             }
+            
+            console.log('Chat window opened'); // Debug log
             // Only lock body scroll on mobile
             if (isMobile) {
                 document.body.style.overflow = 'hidden';
@@ -1138,21 +1142,30 @@ function setupChatWidget() {
     // IMPORTANT: Only close if clicking directly on backdrop, not on chat window content
     if (chatBackdrop) {
         const handleBackdropClose = (e) => {
-            // Only close if clicking directly on backdrop, not if event bubbled from chat window
-            // Also check if the click is actually on the backdrop and not on chat window
+            // CRITICAL: Only close if clicking DIRECTLY on backdrop element itself
+            // Do NOT close if clicking anywhere inside chat window or its children
             const clickedElement = e.target;
-            const isBackdrop = clickedElement === chatBackdrop || chatBackdrop.contains(clickedElement);
-            const isChatWindow = chatWindow && (chatWindow.contains(clickedElement) || clickedElement === chatWindow);
             
-            if (isBackdrop && !isChatWindow) {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log('Backdrop clicked, closing chat'); // Debug log
-                toggleChatWindow(false);
+            // Check if click is directly on backdrop (not on any child elements)
+            if (clickedElement !== chatBackdrop) {
+                return; // Click was on a child element, ignore
             }
+            
+            // Double-check: ensure chat window doesn't contain the clicked element
+            if (chatWindow && chatWindow.contains(clickedElement)) {
+                return; // Click was inside chat window, ignore
+            }
+            
+            // Only close if clicking directly on backdrop itself
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            console.log('Backdrop clicked directly, closing chat'); // Debug log
+            toggleChatWindow(false);
         };
-        chatBackdrop.addEventListener('click', handleBackdropClose);
-        chatBackdrop.addEventListener('touchend', handleBackdropClose); // Mobile touch support
+        // Use capture phase to catch event early, but check target carefully
+        chatBackdrop.addEventListener('click', handleBackdropClose, true);
+        chatBackdrop.addEventListener('touchend', handleBackdropClose, true); // Mobile touch support
     }
     
     // Prevent clicks inside chat window from closing it (stop propagation to backdrop)
