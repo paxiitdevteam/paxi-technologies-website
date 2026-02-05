@@ -2266,7 +2266,7 @@ section.hero-section .hero-subheadline,
     visibility: visible;
 }
 
-/* Chat window backdrop for mobile */
+/* Chat window backdrop for mobile - visual only, non-interactive */
 .chat-window-backdrop {
     display: none;
     position: fixed;
@@ -2278,11 +2278,13 @@ section.hero-section .hero-subheadline,
     z-index: 998;
     opacity: 0;
     transition: opacity 0.3s ease;
+    pointer-events: none; /* Visual only - does not intercept clicks */
 }
 
 .chat-window-backdrop.active {
     display: block;
     opacity: 1;
+    pointer-events: none; /* Visual only - does not intercept clicks */
 }
 
 @keyframes slideUp {
@@ -2837,16 +2839,18 @@ section.hero-section .hero-subheadline,
     
     .chat-window-backdrop.active {
         display: block;
-        pointer-events: auto !important;
+        pointer-events: none !important; /* Backdrop is visual-only, no clicks */
         opacity: 0.5;
         z-index: 998; /* Below chat window (999) but above content */
-        /* Ensure backdrop doesn't intercept clicks meant for chat window */
+        /* Backdrop is purely visual - does not close chat on click */
         touch-action: none; /* Prevent touch gestures on backdrop */
     }
     
-    /* Ensure backdrop doesn't have any children that could intercept clicks */
+    /* Ensure backdrop and all children are non-interactive */
+    .chat-window-backdrop.active,
     .chat-window-backdrop.active * {
-        pointer-events: none !important; /* No child elements should be clickable */
+        pointer-events: none !important; /* Completely non-interactive */
+        cursor: default !important;
     }
     
     /* Ensure chat window and its content are above backdrop */
