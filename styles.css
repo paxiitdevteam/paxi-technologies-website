@@ -2731,12 +2731,16 @@ section.hero-section .hero-subheadline,
         width: 56px;
         height: 56px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        /* Ensure toggle button doesn't block interactions */
+        pointer-events: auto;
     }
     
-    .chat-toggle:hover {
+    .chat-toggle:hover,
+    .chat-toggle:active {
         transform: scale(1.05); /* Smaller hover effect on mobile */
     }
     
+    /* Chat window - only visible when open */
     .chat-window {
         position: fixed;
         bottom: 0;
@@ -2752,11 +2756,26 @@ section.hero-section .hero-subheadline,
         transform: translateY(100%);
         transition: transform 0.3s ease;
         z-index: 999; /* Above backdrop, below mobile menu */
+        display: none; /* Hidden by default */
+        pointer-events: none; /* Can't interact when closed */
     }
     
     .chat-window.open {
         transform: translateY(0);
         display: flex;
+        pointer-events: auto; /* Can interact when open */
+    }
+    
+    /* Backdrop only when chat is open */
+    .chat-window-backdrop {
+        display: none;
+        pointer-events: none;
+    }
+    
+    .chat-window.open ~ .chat-window-backdrop,
+    .chat-window-backdrop.active {
+        display: block;
+        pointer-events: auto;
     }
     
     .chat-header {

@@ -1049,14 +1049,23 @@ function setupChatWidget() {
         
         if (shouldOpen) {
             chatWindow.classList.add('open');
-            chatBackdrop.classList.add('active');
-            document.body.style.overflow = 'hidden';
-            chatInput.focus();
+            if (chatBackdrop) {
+                chatBackdrop.classList.add('active');
+            }
+            // Only lock body scroll on mobile
+            if (window.innerWidth <= 768) {
+                document.body.style.overflow = 'hidden';
+            }
+            setTimeout(() => {
+                if (chatInput) chatInput.focus();
+            }, 100);
             // Check if should show email capture
             checkEmailCapture();
         } else {
             chatWindow.classList.remove('open');
-            chatBackdrop.classList.remove('active');
+            if (chatBackdrop) {
+                chatBackdrop.classList.remove('active');
+            }
             document.body.style.overflow = '';
         }
     };
