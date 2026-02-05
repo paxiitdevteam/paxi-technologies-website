@@ -1150,24 +1150,8 @@ function setupChatWidget() {
         console.log('Backdrop configured as visual-only (no click-to-close)');
     }
     
-    // Prevent clicks inside chat window from closing it (stop propagation to backdrop)
-    // BUT allow close button and interactive elements to work
-    if (chatWindow) {
-        const handleChatWindowClick = (e) => {
-            // Don't stop propagation for close button - let it work normally
-            if (e.target.closest('#chat-close')) {
-                return; // Let close button handle its own event
-            }
-            // Don't stop propagation for interactive elements (buttons, links, inputs)
-            if (e.target.closest('button, a, input, textarea, select')) {
-                return; // Let interactive elements work normally
-            }
-            // Stop propagation to prevent backdrop from receiving the event
-            e.stopPropagation();
-        };
-        chatWindow.addEventListener('click', handleChatWindowClick, true); // Use capture phase
-        chatWindow.addEventListener('touchend', handleChatWindowClick, true); // Use capture phase
-    }
+    // Chat window clicks work normally - backdrop is non-interactive (pointer-events: none)
+    // No need to prevent propagation since backdrop cannot receive clicks
     
     // Close chat on Escape key
     document.addEventListener('keydown', (e) => {
