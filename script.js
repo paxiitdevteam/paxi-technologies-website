@@ -35,11 +35,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Initialize navigation features after header loads
                 setActiveNavLink();
                 initMobileMenu();
-                // Initialize language switcher and apply translations
+                // Initialize language switcher and apply translations after header loads
                 setTimeout(() => {
                     initLanguageSwitcher();
                     // Apply translations after header loads (header contains language switcher)
-                    if (window.LanguageManager) {
+                    // Only apply if translations are loaded
+                    if (window.LanguageManager && window.LanguageManager.translations[window.LanguageManager.currentLang]) {
                         window.LanguageManager.applyTranslations();
                     }
                 }, 100);
@@ -70,12 +71,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 // Update copyright year
                 updateCopyrightYear();
-                // Apply translations after footer loads
-                setTimeout(() => {
-                    if (window.LanguageManager) {
+                // Apply translations after footer loads (wait for translations to be ready)
+                const applyFooterTranslations = () => {
+                    if (window.LanguageManager && window.LanguageManager.translations[window.LanguageManager.currentLang]) {
                         window.LanguageManager.applyTranslations();
+                    } else if (window.LanguageManager) {
+                        // Retry if translations not loaded yet
+                        setTimeout(applyFooterTranslations, 100);
                     }
-                }, 50);
+                };
+                setTimeout(applyFooterTranslations, 50);
             }
         })
         .catch(error => {
@@ -301,6 +306,98 @@ function initMobileMenu() {
     });
 }
 
+/**
+ * Initialize language switcher dropdown
+ */
+function initLanguageSwitcher() {
+    // Retry if element not found yet (header might still be loading)
+    const languageSwitcher = document.getElementById('language-switcher');
+    if (!languageSwitcher) {
+        // Retry after a short delay if header is still loading
+        setTimeout(() => {
+            initLanguageSwitcher();
+        }, 100);
+        return;
+    }
+    
+    // Wait for LanguageManager to be available and translations loaded
+    const initSwitcher = () => {
+        if (!window.LanguageManager) {
+            setTimeout(initSwitcher, 50);
+            return;
+        }
+        
+        // Check if translations are loaded
+        if (!window.LanguageManager.translations[window.LanguageManager.currentLang]) {
+            setTimeout(initSwitcher, 100);
+            return;
+        }
+        
+        // Re-query the element to ensure it's still in the DOM
+        const currentSwitcher = document.getElementById('language-switcher');
+        if (!currentSwitcher) {
+            console.warn('Language switcher element not found, retrying...');
+            setTimeout(initSwitcher, 100);
+            return;
+        }
+        
+        // Set current language value
+        const currentLang = window.LanguageManager.getCurrentLanguage();
+        currentSwitcher.value = currentLang;
+        
+        // Remove any existing event listeners by cloning the element (only if parent exists)
+        try {
+            if (currentSwitcher.parentNode) {
+                const newSwitcher = currentSwitcher.cloneNode(true);
+                newSwitcher.value = currentLang;
+                currentSwitcher.parentNode.replaceChild(newSwitcher, currentSwitcher);
+                
+                // Add change event listener to the new element
+                newSwitcher.addEventListener('change', function(e) {
+                    const selectedLang = e.target.value;
+                    if (window.LanguageManager) {
+                        window.LanguageManager.setLanguage(selectedLang).then(() => {
+                            console.log('Language changed to:', selectedLang);
+                        }).catch(error => {
+                            console.error('Error changing language:', error);
+                        });
+                    }
+                });
+                
+                console.log('Language switcher initialized with language:', currentLang);
+            } else {
+                // Fallback: element has no parent, just add listener directly
+                currentSwitcher.addEventListener('change', function(e) {
+                    const selectedLang = e.target.value;
+                    if (window.LanguageManager) {
+                        window.LanguageManager.setLanguage(selectedLang).then(() => {
+                            console.log('Language changed to:', selectedLang);
+                        }).catch(error => {
+                            console.error('Error changing language:', error);
+                        });
+                    }
+                });
+                console.log('Language switcher initialized (fallback mode) with language:', currentLang);
+            }
+        } catch (error) {
+            console.error('Error initializing language switcher:', error);
+            // Final fallback: just add the event listener
+            currentSwitcher.addEventListener('change', function(e) {
+                const selectedLang = e.target.value;
+                if (window.LanguageManager) {
+                    window.LanguageManager.setLanguage(selectedLang).then(() => {
+                        console.log('Language changed to:', selectedLang);
+                    }).catch(error => {
+                        console.error('Error changing language:', error);
+                    });
+                }
+            });
+        }
+    };
+    
+    initSwitcher();
+}
+
 // Form Validation Enhancement
 function initContactForm() {
     const contactForm = document.querySelector('.contact-form');
@@ -457,19 +554,32 @@ document.addEventListener('DOMContentLoaded', function() {
     // Wait for language manager to initialize and apply translations
     const applyTranslationsWhenReady = () => {
         if (window.LanguageManager) {
-            window.LanguageManager.applyTranslations();
-            // Also apply after a short delay to catch dynamically loaded content
-            setTimeout(() => {
-                if (window.LanguageManager) {
-                    window.LanguageManager.applyTranslations();
-                }
-            }, 200);
+            // Only apply if translations are loaded for current language
+            if (window.LanguageManager.translations[window.LanguageManager.currentLang]) {
+                window.LanguageManager.applyTranslations();
+                // Also apply after a short delay to catch dynamically loaded content
+                setTimeout(() => {
+                    if (window.LanguageManager && window.LanguageManager.translations[window.LanguageManager.currentLang]) {
+                        window.LanguageManager.applyTranslations();
+                    }
+                }, 200);
+            } else {
+                // Retry if translations not loaded yet
+                setTimeout(applyTranslationsWhenReady, 100);
+            }
         } else {
             // Retry if LanguageManager not ready yet
             setTimeout(applyTranslationsWhenReady, 50);
         }
     };
     applyTranslationsWhenReady();
+    
+    // Initialize language switcher (fallback if header already loaded)
+    // The header loading callback also calls this, but this ensures it's initialized
+    // Wait longer to ensure header is loaded
+    setTimeout(() => {
+        initLanguageSwitcher();
+    }, 500);
     
     initContactForm();
     initScrollAnimations();
@@ -1041,7 +1151,7 @@ function initChatWidget() {
                         setTimeout(() => {
                             setupChatWidget();
                             // Apply translations after chat widget loads
-                            if (window.LanguageManager) {
+                            if (window.LanguageManager && window.LanguageManager.translations[window.LanguageManager.currentLang]) {
                                 window.LanguageManager.applyTranslations();
                             }
                         }, 10);
