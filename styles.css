@@ -2766,7 +2766,10 @@ section.hero-section .hero-subheadline,
         height: 56px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         /* Ensure toggle button doesn't block interactions */
-        pointer-events: auto;
+        pointer-events: auto !important;
+        cursor: pointer;
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1); /* Remove tap highlight on iOS */
+        touch-action: manipulation; /* Improve touch responsiveness */
     }
     
     .chat-toggle:hover,
@@ -2798,19 +2801,22 @@ section.hero-section .hero-subheadline,
     
     .chat-window.open {
         transform: translateY(0);
-        display: flex;
-        pointer-events: auto; /* Can interact when open */
+        display: flex !important;
+        pointer-events: auto !important; /* Can interact when open */
         opacity: 1;
         visibility: visible;
+        z-index: 999; /* Ensure it's above backdrop */
     }
     
     /* Ensure chat widget doesn't block hero content when closed */
-    .chat-widget:not(:has(.chat-window.open)) {
-        pointer-events: auto; /* Toggle button is always clickable */
+    /* Note: :has() selector may not be supported on all mobile browsers */
+    .chat-widget .chat-toggle {
+        pointer-events: auto !important; /* Toggle button is always clickable */
+        z-index: 1001; /* Above everything when chat is closed */
     }
     
-    .chat-widget:not(:has(.chat-window.open)) .chat-window {
-        pointer-events: none; /* Window can't block when closed */
+    .chat-widget .chat-window:not(.open) {
+        pointer-events: none !important; /* Window can't block when closed */
     }
     
     /* Backdrop only when chat is open */
@@ -2819,12 +2825,15 @@ section.hero-section .hero-subheadline,
         pointer-events: none;
         opacity: 0;
         transition: opacity 0.3s ease;
+        -webkit-tap-highlight-color: transparent; /* Remove tap highlight */
+        touch-action: manipulation; /* Improve touch responsiveness */
     }
     
     .chat-window-backdrop.active {
         display: block;
-        pointer-events: auto;
-        opacity: 1;
+        pointer-events: auto !important;
+        opacity: 0.5;
+        z-index: 998; /* Below chat window (999) but above content */
     }
     
     .chat-header {
@@ -2897,6 +2906,10 @@ section.hero-section .hero-subheadline,
         padding: var(--space-sm) var(--space-md);
         font-size: var(--font-size-sm);
         min-height: 44px; /* Touch target size */
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1); /* Visible tap feedback */
+        touch-action: manipulation; /* Improve touch responsiveness */
+        cursor: pointer;
+        pointer-events: auto !important; /* Always clickable */
     }
     
     .chat-input-container {
@@ -2918,6 +2931,10 @@ section.hero-section .hero-subheadline,
     .chat-send {
         min-width: 44px;
         min-height: 44px;
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1); /* Visible tap feedback */
+        touch-action: manipulation; /* Improve touch responsiveness */
+        cursor: pointer;
+        pointer-events: auto !important; /* Always clickable */
     }
     
     .chat-messages {

@@ -1046,14 +1046,24 @@ function setupChatWidget() {
     const toggleChatWindow = (open) => {
         const isOpen = chatWindow.classList.contains('open');
         const shouldOpen = open !== undefined ? open : !isOpen;
+        const isMobile = window.innerWidth <= 768;
         
         if (shouldOpen) {
             chatWindow.classList.add('open');
+            // Force display and pointer-events for mobile compatibility
+            if (isMobile) {
+                chatWindow.style.display = 'flex';
+                chatWindow.style.pointerEvents = 'auto';
+            }
             if (chatBackdrop) {
                 chatBackdrop.classList.add('active');
+                if (isMobile) {
+                    chatBackdrop.style.display = 'block';
+                    chatBackdrop.style.pointerEvents = 'auto';
+                }
             }
             // Only lock body scroll on mobile
-            if (window.innerWidth <= 768) {
+            if (isMobile) {
                 document.body.style.overflow = 'hidden';
             }
             setTimeout(() => {
@@ -1063,32 +1073,53 @@ function setupChatWidget() {
             checkEmailCapture();
         } else {
             chatWindow.classList.remove('open');
+            if (isMobile) {
+                chatWindow.style.display = 'none';
+                chatWindow.style.pointerEvents = 'none';
+            }
             if (chatBackdrop) {
                 chatBackdrop.classList.remove('active');
+                if (isMobile) {
+                    chatBackdrop.style.display = 'none';
+                    chatBackdrop.style.pointerEvents = 'none';
+                }
             }
             document.body.style.overflow = '';
         }
     };
     
-    // Toggle chat window
+    // Toggle chat window - support both click and touch events for mobile
     if (chatToggle) {
-        chatToggle.addEventListener('click', (e) => {
+        const handleToggle = (e) => {
+            e.preventDefault();
             e.stopPropagation();
             toggleChatWindow();
-        });
+        };
+        chatToggle.addEventListener('click', handleToggle);
+        chatToggle.addEventListener('touchend', handleToggle); // Mobile touch support
     }
     
-    // Close chat window
+    // Close chat window - support both click and touch events for mobile
     if (chatClose) {
-        chatClose.addEventListener('click', () => {
+        const handleClose = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             toggleChatWindow(false);
-        });
+        };
+        chatClose.addEventListener('click', handleClose);
+        chatClose.addEventListener('touchend', handleClose); // Mobile touch support
     }
     
-    // Close chat when clicking backdrop (mobile)
-    chatBackdrop.addEventListener('click', () => {
-        toggleChatWindow(false);
-    });
+    // Close chat when clicking backdrop (mobile) - support touch
+    if (chatBackdrop) {
+        const handleBackdropClose = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleChatWindow(false);
+        };
+        chatBackdrop.addEventListener('click', handleBackdropClose);
+        chatBackdrop.addEventListener('touchend', handleBackdropClose); // Mobile touch support
+    }
     
     // Close chat on Escape key
     document.addEventListener('keydown', (e) => {
@@ -1116,17 +1147,28 @@ function setupChatWidget() {
         });
     }
     
-    // Send message on button click
+    // Send message on button click - support touch for mobile
     if (chatSend) {
-        chatSend.addEventListener('click', sendMessage);
+        const handleSend = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            sendMessage();
+        };
+        chatSend.addEventListener('click', handleSend);
+        chatSend.addEventListener('touchend', handleSend); // Mobile touch support
     }
     
-    // Quick action buttons
+    // Quick action buttons - support touch for mobile
+    // Quick action buttons - support touch for mobile
     quickActions.forEach(btn => {
-        btn.addEventListener('click', () => {
+        const handleQuickActionClick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             const action = btn.getAttribute('data-action');
             handleQuickAction(action);
-        });
+        };
+        btn.addEventListener('click', handleQuickActionClick);
+        btn.addEventListener('touchend', handleQuickActionClick); // Mobile touch support
     });
     
     function sendMessage() {
