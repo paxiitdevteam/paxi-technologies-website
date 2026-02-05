@@ -1102,17 +1102,19 @@ function setupChatWidget() {
             console.log('Toggle button clicked'); // Debug log
             toggleChatWindow();
         };
-        // Remove any existing listeners first to avoid duplicates
-        const newToggle = chatToggle.cloneNode(true);
-        chatToggle.parentNode.replaceChild(newToggle, chatToggle);
         
-        // Add event listeners to the new element
-        newToggle.addEventListener('click', handleToggle);
-        newToggle.addEventListener('touchend', handleToggle); // Mobile touch support
+        // Use once option to avoid duplicate listeners, but also add multiple times for reliability
+        chatToggle.addEventListener('click', handleToggle, { once: false });
+        chatToggle.addEventListener('touchend', handleToggle, { once: false });
         
         // Also ensure pointer events are enabled
-        newToggle.style.pointerEvents = 'auto';
-        newToggle.style.cursor = 'pointer';
+        chatToggle.style.pointerEvents = 'auto';
+        chatToggle.style.cursor = 'pointer';
+        
+        // Debug: Log if toggle button is found
+        console.log('Chat toggle button initialized:', chatToggle);
+    } else {
+        console.error('Chat toggle button not found!');
     }
     
     // Close chat window - support both click and touch events for mobile
