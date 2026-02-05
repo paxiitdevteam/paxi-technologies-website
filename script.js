@@ -1111,14 +1111,28 @@ function setupChatWidget() {
     }
     
     // Close chat when clicking backdrop (mobile) - support touch
+    // IMPORTANT: Only close if clicking directly on backdrop, not on chat window content
     if (chatBackdrop) {
         const handleBackdropClose = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            toggleChatWindow(false);
+            // Only close if clicking directly on backdrop, not if event bubbled from chat window
+            if (e.target === chatBackdrop) {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleChatWindow(false);
+            }
         };
         chatBackdrop.addEventListener('click', handleBackdropClose);
         chatBackdrop.addEventListener('touchend', handleBackdropClose); // Mobile touch support
+    }
+    
+    // Prevent clicks inside chat window from closing it (stop propagation to backdrop)
+    if (chatWindow) {
+        const handleChatWindowClick = (e) => {
+            // Stop propagation to prevent backdrop from receiving the event
+            e.stopPropagation();
+        };
+        chatWindow.addEventListener('click', handleChatWindowClick, true); // Use capture phase
+        chatWindow.addEventListener('touchend', handleChatWindowClick, true); // Use capture phase
     }
     
     // Close chat on Escape key
@@ -1398,16 +1412,31 @@ function setupChatWidget() {
         if (text.includes('<')) {
             content.innerHTML = text;
             
-            // Add click tracking to action buttons
+            // Add click tracking to action buttons and prevent backdrop from closing
             const actionButtons = content.querySelectorAll('.chat-action-btn');
             actionButtons.forEach(btn => {
-                btn.addEventListener('click', () => {
+                const handleActionClick = (e) => {
+                    // Stop propagation to prevent backdrop from receiving the event
+                    e.stopPropagation();
                     const url = btn.getAttribute('href');
                     trackChatEvent('action_button_clicked', {
                         button_text: btn.textContent,
                         url: url
                     });
-                });
+                };
+                btn.addEventListener('click', handleActionClick);
+                btn.addEventListener('touchend', handleActionClick); // Mobile touch support
+            });
+            
+            // Also prevent propagation for all links inside chat messages
+            const allLinks = content.querySelectorAll('a');
+            allLinks.forEach(link => {
+                const handleLinkClick = (e) => {
+                    // Stop propagation to prevent backdrop from receiving the event
+                    e.stopPropagation();
+                };
+                link.addEventListener('click', handleLinkClick);
+                link.addEventListener('touchend', handleLinkClick); // Mobile touch support
             });
         } else {
             // Handle plain text multi-line messages

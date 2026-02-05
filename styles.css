@@ -2827,6 +2827,7 @@ section.hero-section .hero-subheadline,
         transition: opacity 0.3s ease;
         -webkit-tap-highlight-color: transparent; /* Remove tap highlight */
         touch-action: manipulation; /* Improve touch responsiveness */
+        z-index: 998; /* Below chat window (999) but above content */
     }
     
     .chat-window-backdrop.active {
@@ -2834,6 +2835,15 @@ section.hero-section .hero-subheadline,
         pointer-events: auto !important;
         opacity: 0.5;
         z-index: 998; /* Below chat window (999) but above content */
+    }
+    
+    /* Ensure chat window and its content are above backdrop */
+    .chat-window {
+        z-index: 999 !important; /* Above backdrop */
+    }
+    
+    .chat-window * {
+        pointer-events: auto !important; /* All content inside chat window is clickable */
     }
     
     .chat-header {
