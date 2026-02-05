@@ -2352,6 +2352,9 @@ section.hero-section .hero-subheadline,
     color: white;
     cursor: pointer;
     padding: var(--space-sm);
+    pointer-events: auto !important; /* Always clickable */
+    z-index: 1000; /* Above other elements */
+    position: relative; /* Ensure z-index works */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2844,6 +2847,18 @@ section.hero-section .hero-subheadline,
     
     .chat-window * {
         pointer-events: auto !important; /* All content inside chat window is clickable */
+    }
+    
+    /* Ensure close button is always clickable and above everything */
+    .chat-close {
+        pointer-events: auto !important;
+        z-index: 1001 !important; /* Above chat window and all content */
+        position: relative;
+        cursor: pointer !important;
+    }
+    
+    .chat-close svg {
+        pointer-events: none; /* SVG doesn't intercept clicks */
     }
     
     .chat-header {

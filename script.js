@@ -1104,10 +1104,16 @@ function setupChatWidget() {
         const handleClose = (e) => {
             e.preventDefault();
             e.stopPropagation();
+            e.stopImmediatePropagation(); // Stop all handlers
+            console.log('Close button clicked'); // Debug log
             toggleChatWindow(false);
         };
-        chatClose.addEventListener('click', handleClose);
-        chatClose.addEventListener('touchend', handleClose); // Mobile touch support
+        // Use capture phase to ensure handler runs before chat window handler
+        chatClose.addEventListener('click', handleClose, true);
+        chatClose.addEventListener('touchend', handleClose, true); // Mobile touch support
+        // Also add in bubble phase as backup
+        chatClose.addEventListener('click', handleClose, false);
+        chatClose.addEventListener('touchend', handleClose, false);
     }
     
     // Close chat when clicking backdrop (mobile) - support touch
@@ -1126,8 +1132,13 @@ function setupChatWidget() {
     }
     
     // Prevent clicks inside chat window from closing it (stop propagation to backdrop)
+    // BUT allow close button clicks to work
     if (chatWindow) {
         const handleChatWindowClick = (e) => {
+            // Don't stop propagation for close button - let it work normally
+            if (e.target.closest('#chat-close')) {
+                return; // Let close button handle its own event
+            }
             // Stop propagation to prevent backdrop from receiving the event
             e.stopPropagation();
         };
