@@ -1006,7 +1006,10 @@ function initChatWidget() {
                             window.PMS.fixPathsInContainer(tempDiv);
                         }
                         document.body.insertAdjacentHTML('beforeend', tempDiv.innerHTML);
-                        setupChatWidget();
+                        // Small delay to ensure DOM is ready
+                        setTimeout(() => {
+                            setupChatWidget();
+                        }, 10);
                     })
         .catch(error => {
             console.error('Error loading chat widget:', error);
@@ -1050,11 +1053,12 @@ function setupChatWidget() {
         
         if (shouldOpen) {
             chatWindow.classList.add('open');
-            // Force display and pointer-events for mobile compatibility
-            if (isMobile) {
-                chatWindow.style.display = 'flex';
-                chatWindow.style.pointerEvents = 'auto';
-            }
+            // Force display and pointer-events for both desktop and mobile
+            chatWindow.style.display = 'flex';
+            chatWindow.style.pointerEvents = 'auto';
+            chatWindow.style.opacity = '1';
+            chatWindow.style.visibility = 'visible';
+            
             if (chatBackdrop) {
                 chatBackdrop.classList.add('active');
                 if (isMobile) {
@@ -1073,10 +1077,12 @@ function setupChatWidget() {
             checkEmailCapture();
         } else {
             chatWindow.classList.remove('open');
-            if (isMobile) {
-                chatWindow.style.display = 'none';
-                chatWindow.style.pointerEvents = 'none';
-            }
+            // Hide on both desktop and mobile
+            chatWindow.style.display = 'none';
+            chatWindow.style.pointerEvents = 'none';
+            chatWindow.style.opacity = '0';
+            chatWindow.style.visibility = 'hidden';
+            
             if (chatBackdrop) {
                 chatBackdrop.classList.remove('active');
                 if (isMobile) {
@@ -1093,10 +1099,20 @@ function setupChatWidget() {
         const handleToggle = (e) => {
             e.preventDefault();
             e.stopPropagation();
+            console.log('Toggle button clicked'); // Debug log
             toggleChatWindow();
         };
-        chatToggle.addEventListener('click', handleToggle);
-        chatToggle.addEventListener('touchend', handleToggle); // Mobile touch support
+        // Remove any existing listeners first to avoid duplicates
+        const newToggle = chatToggle.cloneNode(true);
+        chatToggle.parentNode.replaceChild(newToggle, chatToggle);
+        
+        // Add event listeners to the new element
+        newToggle.addEventListener('click', handleToggle);
+        newToggle.addEventListener('touchend', handleToggle); // Mobile touch support
+        
+        // Also ensure pointer events are enabled
+        newToggle.style.pointerEvents = 'auto';
+        newToggle.style.cursor = 'pointer';
     }
     
     // Close chat window - support both click and touch events for mobile

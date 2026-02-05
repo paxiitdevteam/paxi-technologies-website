@@ -2208,6 +2208,8 @@ section.hero-section .hero-subheadline,
     justify-content: center;
     transition: all 0.3s ease;
     position: relative;
+    pointer-events: auto !important; /* Always clickable */
+    z-index: 1000; /* Above other content */
 }
 
 .chat-toggle:hover {
@@ -2890,14 +2892,19 @@ section.hero-section .hero-subheadline,
     }
     
     .chat-close {
-        background: rgba(255, 255, 255, 0.3) !important;
+        background: rgba(0, 0, 0, 0.5) !important; /* Darker background for visibility */
         padding: var(--space-sm);
         min-width: 44px; /* Touch target size for mobile */
         min-height: 44px;
         margin-left: var(--space-sm);
         flex-shrink: 0;
-        border: 2px solid rgba(255, 255, 255, 0.5);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        border: 2px solid rgba(255, 255, 255, 0.9) !important; /* Bright white border */
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important; /* Stronger shadow */
+        display: flex !important; /* Ensure it's displayed */
+        align-items: center !important;
+        justify-content: center !important;
+        opacity: 1 !important; /* Fully visible */
+        visibility: visible !important;
     }
     
     .chat-close:active {
