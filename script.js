@@ -1035,22 +1035,66 @@ function setupChatWidget() {
     // Initialize chat history
     loadChatHistory();
     
+    // Create backdrop for mobile if it doesn't exist
+    let chatBackdrop = document.querySelector('.chat-window-backdrop');
+    if (!chatBackdrop) {
+        chatBackdrop = document.createElement('div');
+        chatBackdrop.className = 'chat-window-backdrop';
+        document.body.appendChild(chatBackdrop);
+    }
+    
+    const toggleChatWindow = (open) => {
+        const isOpen = chatWindow.classList.contains('open');
+        const shouldOpen = open !== undefined ? open : !isOpen;
+        
+        if (shouldOpen) {
+            chatWindow.classList.add('open');
+            chatBackdrop.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            chatInput.focus();
+            // Check if should show email capture
+            checkEmailCapture();
+        } else {
+            chatWindow.classList.remove('open');
+            chatBackdrop.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    };
+    
     // Toggle chat window
     if (chatToggle) {
-        chatToggle.addEventListener('click', () => {
-            chatWindow.classList.toggle('open');
-            if (chatWindow.classList.contains('open')) {
-                chatInput.focus();
-                // Check if should show email capture
-                checkEmailCapture();
-            }
+        chatToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleChatWindow();
         });
     }
     
     // Close chat window
     if (chatClose) {
         chatClose.addEventListener('click', () => {
-            chatWindow.classList.remove('open');
+            toggleChatWindow(false);
+        });
+    }
+    
+    // Close chat when clicking backdrop (mobile)
+    chatBackdrop.addEventListener('click', () => {
+        toggleChatWindow(false);
+    });
+    
+    // Close chat on Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && chatWindow.classList.contains('open')) {
+            toggleChatWindow(false);
+        }
+    });
+    
+    // Close chat when mobile menu opens (to avoid conflicts)
+    const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+    if (mobileMenuToggle) {
+        mobileMenuToggle.addEventListener('click', () => {
+            if (chatWindow.classList.contains('open') && window.innerWidth <= 768) {
+                toggleChatWindow(false);
+            }
         });
     }
     
